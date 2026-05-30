@@ -1,0 +1,16 @@
+fastapi>=0.110.0
+uvicorn[standard]
+sqlalchemy[asyncio]>=2.0.0
+asyncpg
+geoalchemy2
+pydantic[email]>=2.0.0
+pydantic-settings
+redis>=7.0.0
+celery>=5.0.0
+alembic
+psycopg2-binary
+fastapi-users[sqlalchemy]
+aiosqlite
+python-jose[cryptography]
+passlib[bcrypt]
+httpx

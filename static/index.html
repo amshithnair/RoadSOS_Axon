@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROADSoS - Emergency</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --panic-red: #d32f2f;
+            --white: #ffffff;
+            --safe-blue: #1976d2;
+            --bg-color: #f8f9fa;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+            --glass-border: rgba(255, 255, 255, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-primary: #f8f9fa;
+            --text-secondary: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            padding-bottom: 70px;
+            transition: background 0.3s ease;
+        }
+
+        header {
+            background: var(--panic-red);
+            color: white;
+            padding: 1.2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 12px;
+            border-bottom: 1px solid var(--glass-border);
+            gap: 8px;
+            scrollbar-width: none;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 24px;
+            background: rgba(0, 0, 0, 0.05);
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab.active {
+            background: var(--panic-red);
+            color: white;
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            margin: 12px;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .emergency-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 18px;
+            background: var(--panic-red);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            min-height: 56px;
+            margin-top: 12px;
+            transition: transform 0.2s active;
+            box-shadow: 0 4px 14px 0 rgba(211, 47, 47, 0.39);
+        }
+
+        .emergency-btn:active {
+            transform: scale(0.98);
+        }
+
+        #map {
+            height: 280px;
+            margin: 12px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            color: white;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            display: flex;
+            border-top: 1px solid var(--glass-border);
+            padding: 8px;
+            box-sizing: border-box;
+            gap: 8px;
+        }
+
+        footer button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: rgba(25, 118, 210, 0.1);
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--safe-blue);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="width: 40px"></div>
+        <h1 style="font-size: 1.4rem; margin: 0; letter-spacing: -0.5px;">ROADSoS</h1>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+            🌓
+        </button>
+    </header>
+    
+    <div class="tabs" id="category-tabs">
+        <button class="tab active" onclick="filterCat(null, this)">ALL</button>
+        <button class="tab" onclick="filterCat('HOSPITAL', this)">HOSPITALS</button>
+        <button class="tab" onclick="filterCat('POLICE', this)">POLICE</button>
+        <button class="tab" onclick="filterCat('AMBULANCE', this)">AMBULANCE</button>
+        <button class="tab" onclick="filterCat('TOWING', this)">TOWING</button>
+        <button class="tab" onclick="filterCat('TYRE_SHOP', this)">TYRES</button>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="services-list"></div>
+
+    <div id="first-aid-overlay" class="overlay">
+        <span style="float: right; font-size: 2rem; cursor: pointer" onclick="toggleOverlay('first-aid-overlay')">&times;</span>
+        <h2 style="font-size: 1.8rem; margin-top: 0;">Life-Saving Steps</h2>
+        <div class="card" style="background: white; color: black; margin: 12px 0;">
+            <h4 style="color: var(--panic-red); margin: 0 0 8px 0;">Severe Bleeding</h4>
+            <p>1. Apply firm, direct pressure with any clean cloth.</p>
+            <p>2. Do not release until medical help arrives.</p>
+        </div>
+        <div class="card" style="background: white; color: black; margin: 12px 0;">
+            <h4 style="color: var(--safe-blue); margin: 0 0 8px 0;">Unconscious (Breathing)</h4>
+            <p>1. Tilt head back to open airway.</p>
+            <p>2. Roll onto side into recovery position.</p>
+        </div>
+    </div>
+
+    <footer>
+        <button onclick="toggleOverlay('first-aid-overlay')">FIRST AID</button>
+        <button onclick="shareLocation()" style="background: var(--safe-blue); color: white;">SHARE SOS</button>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map, userMarker, activeCategory = null;
+        let servicesData = [];
+        let markers = [];
+
+        function init() {
+            // Restore theme
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            map = L.map('map', { zoomControl: false }).setView([0, 0], 2);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const { latitude, longitude } = pos.coords;
+                map.setView([latitude, longitude], 14);
+                userMarker = L.circleMarker([latitude, longitude], {
+                    radius: 8, fillOpacity: 1, color: '#fff', weight: 2, fillColor: '#1976d2'
+                }).addTo(map);
+                fetchServices(latitude, longitude);
+            });
+        }
+
+        async function fetchServices(lat, lng) {
+            let url = `/api/v1/services/nearby?lat=${lat}&lng=${lng}`;
+            if (activeCategory) url += `&category=${activeCategory}`;
+            
+            try {
+                const res = await fetch(url);
+                servicesData = await res.json();
+                renderServices();
+            } catch (e) {
+                console.error("Fetch failed", e);
+            }
+        }
+
+        function renderServices() {
+            const list = document.getElementById('services-list');
+            list.innerHTML = servicesData.map(s => `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem;">${s.name}</h3>
+                            <span style="font-size: 0.75rem; color: var(--safe-blue); font-weight: 700;">${s.category}</span>
+                        </div>
+                        <div style="text-align: right">
+                            <div style="font-weight: 800; color: var(--text-primary)">${s.distance_km}km</div>
+                        </div>
+                    </div>
+                    <a href="tel:${s.phones[0] || '911'}" class="emergency-btn">CALL NOW</a>
+                </div>
+            `).join('');
+            
+            // Clear old markers
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            servicesData.forEach(s => {
+                const m = L.marker([s.coordinates.coordinates[1], s.coordinates.coordinates[0]])
+                    .addTo(map)
+                    .bindPopup(`<b>${s.name}</b>`);
+                markers.push(m);
+            });
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', target);
+            localStorage.setItem('theme', target);
+        }
+
+        function filterCat(cat, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            activeCategory = cat;
+            navigator.geolocation.getCurrentPosition(p => fetchServices(p.coords.latitude, p.coords.longitude));
+        }
+
+        function toggleOverlay(id) {
+            const el = document.getElementById(id);
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function shareLocation() {
+            navigator.geolocation.getCurrentPosition(p => {
+                const msg = `ROADSoS EMERGENCY! I need help. My location: https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+                window.open(`sms:?body=${encodeURIComponent(msg)}`);
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
