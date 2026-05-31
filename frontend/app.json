@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "ROADSoS",
+    "slug": "roadsos",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.roadsos.app"
+    },
+    "android": {
+      "package": "com.roadsos.app"
+    },
+    "web": {
+    },
+    "scheme": "roadsos",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow ROADSoS to access your camera"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow ROADSoS to access your location"
+        }
+      ]
+    ],
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "extra": {
+      "apiBaseUrl": "http://localhost:8000/api/v1"
+    }
+  }
+}
