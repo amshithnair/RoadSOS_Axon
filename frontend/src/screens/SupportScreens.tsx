@@ -36,7 +36,13 @@ export const IncidentMapScreen: React.FC<{ navigation: any; route: any }> = ({ n
   const shareLink = `roadsos.app/i/${incidentId}`;
 
   const handleCopy = () => {
-    try { (Clipboard as any).setString(shareLink); } catch {}
+    try {
+      if (Platform.OS === 'web' && navigator?.clipboard) {
+        navigator.clipboard.writeText(shareLink).catch(() => {});
+      } else {
+        Clipboard.setString(shareLink);
+      }
+    } catch {}
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -98,7 +104,7 @@ export const IncidentMapScreen: React.FC<{ navigation: any; route: any }> = ({ n
 
         <Button
           title="✅ Mark Resolved"
-          onPress={() => { Alert.alert('Incident resolved', 'Thank you.'); navigation.navigate('HomeMain'); }}
+          onPress={() => { Alert.alert('Incident resolved', 'Thank you.'); try { navigation.getParent()?.navigate('HomeMain'); } catch { navigation.navigate('HomeMain'); } }}
           variant="outline"
           style={{ marginTop: 12 }}
         />
@@ -334,7 +340,7 @@ export const BystanderGuidanceScreen: React.FC<{ navigation: any; route: any }> 
             title="🚑 Ambulance has arrived"
             onPress={() => {
               Alert.alert('Incident resolved', 'Thank you for helping!');
-              navigation.navigate('HomeMain');
+              try { navigation.getParent()?.navigate('HomeMain'); } catch { navigation.navigate('HomeMain'); }
             }}
             style={{ backgroundColor: Colors.green, marginTop: 8 }}
           />
@@ -431,7 +437,7 @@ export const SafeArrivalScreen: React.FC<{ navigation: any }> = ({ navigation })
     const m = parseInt(mins) || 0;
     const deadline = Date.now() + (h * 60 + m) * 60 * 1000;
     setSafeArrival({ deadline, destination, contacts: selectedContacts });
-    navigation.navigate('HomeMain');
+    try { navigation.getParent()?.navigate('HomeMain'); } catch { navigation.navigate('HomeMain'); }
   };
 
   const toggleContact = (contact: EmergencyContact) => {
@@ -456,7 +462,7 @@ export const SafeArrivalScreen: React.FC<{ navigation: any }> = ({ navigation })
           </View>
           <Button
             title="✅ I Arrived Safely — Check In"
-            onPress={() => { clearSafeArrival(); navigation.navigate('HomeMain'); }}
+            onPress={() => { clearSafeArrival(); try { navigation.getParent()?.navigate('HomeMain'); } catch { navigation.navigate('HomeMain'); } }}
             style={{ backgroundColor: Colors.green, marginTop: 16 }}
           />
           <Button

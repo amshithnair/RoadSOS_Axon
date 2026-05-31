@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  Clipboard,
   Platform,
 } from 'react-native';
 import {
@@ -70,9 +69,27 @@ export const AccidentReportScreen: React.FC<{ navigation: any }> = ({ navigation
     return `To,\nThe Officer-In-Charge,\nPolice Department\n\nSubject: INTIMATION OF ROAD ACCIDENT\n\nRespected Sir/Madam,\n\nI am writing to formally report a road traffic accident that occurred on ${dateTime || '[Date/Time]'}.\n\nDetails of the occurrence are as follows:\n- Location: ${gpsLocation || '[Location]'}\n- Vehicles Involved: ${vehicles || '[N/A]'}\n- Description of Incident: ${description || 'No description provided.'}\n- Photo Evidence Attached: ${photos.length > 0 ? photos.join(', ') : 'None'}\n\nPlease take this information on record as a formal general diary entry / FIR intimation.\n\nReported via ROADSoS App\nTimestamp: ${new Date().toISOString()}`;
   };
 
-  const handleCopyReport = () => {
+  const handleCopyReport = async () => {
+    const text = generateFIRText();
     try {
-      Clipboard.setString(generateFIRText());
+      if (Platform.OS === 'web' && navigator?.clipboard) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for older RN / Native Clipboard
+        try {
+          // @ts-ignore
+          const Clipboard = require('@react-native-clipboard/clipboard');
+          if (Clipboard && Clipboard.setString) {
+            Clipboard.setString(text);
+          } else {
+            const { Clipboard: RNClipboard } = require('react-native');
+            if (RNClipboard) RNClipboard.setString(text);
+          }
+        } catch {
+          const { Clipboard: RNClipboard } = require('react-native');
+          if (RNClipboard) RNClipboard.setString(text);
+        }
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       Alert.alert('Success', 'FIR / Accident Report copied to clipboard.');
@@ -197,7 +214,7 @@ export const AccidentReportScreen: React.FC<{ navigation: any }> = ({ navigation
 
         <Button
           title="Done & Return Home"
-          onPress={() => navigation.navigate('HomeMain')}
+          onPress={() => { try { navigation.getParent()?.navigate('HomeMain'); } catch { navigation.navigate('HomeMain'); } }}
           variant="outline"
           style={{ marginTop: 16 }}
         />

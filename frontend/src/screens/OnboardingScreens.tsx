@@ -43,13 +43,15 @@ export const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     // Load storage + navigate after 1.5s
     const init = async () => {
       await loadFromStorage();
-      // offline DB already handled in store
     };
     init();
 
     const timer = setTimeout(() => {
-      const fresh = useIncidentStore.getState().onboardingComplete;
-      navigation.replace(fresh ? 'HomeMain' : 'LandingIntro');
+      const { onboardingComplete } = useIncidentStore.getState();
+      if (!onboardingComplete) {
+        navigation.replace('LandingIntro');
+      }
+      // If onboardingComplete=true, App.tsx will automatically render HomeStack
     }, 1800);
 
     return () => clearTimeout(timer);
@@ -154,7 +156,10 @@ export const LandingIntroScreen: React.FC<{ navigation: any }> = ({ navigation }
           />
           <TouchableOpacity
             style={ss.landingSkipLink}
-            onPress={() => navigation.replace('HomeMain')}
+            onPress={() => {
+            useIncidentStore.getState().setOnboarding(true);
+            // App.tsx will swap to HomeStack automatically
+          }}
           >
             <Text style={ss.landingSkipLinkText}>Already configured? Skip to Home</Text>
           </TouchableOpacity>
@@ -374,7 +379,13 @@ export const SetupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
     store.setLanguage(language);
     setSaved(true);
     setTimeout(() => {
-      navigation.replace('HomeMain');
+      if (store.onboardingComplete) {
+        // Already in HomeStack — just go back to profile
+        navigation.goBack();
+      } else {
+        // In OnboardingStack — mark complete, App.tsx swaps stacks
+        useIncidentStore.getState().setOnboarding(true);
+      }
     }, 800);
   };
 
@@ -463,7 +474,9 @@ export const SetupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           />
           <Button
             title="Skip"
-            onPress={() => navigation.replace('HomeMain')}
+            onPress={() => {
+            useIncidentStore.getState().setOnboarding(true);
+          }}
             variant="ghost"
             style={{ marginTop: 4 }}
           />
