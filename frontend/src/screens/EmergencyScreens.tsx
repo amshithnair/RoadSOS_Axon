@@ -9,6 +9,7 @@ import {
   Linking,
   BackHandler,
   Alert,
+  Platform,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useIncidentStore } from '../store';
@@ -32,7 +33,6 @@ import {
 import {
   MockService,
   getMedicalServices,
-  getMedicalLabel,
   MOCK_POLICE,
   MOCK_FUEL,
   MOCK_FIRE_STATIONS,
@@ -121,15 +121,173 @@ const ServiceCard: React.FC<{
 
 // ─── TRIAGE SCREEN ───────────────────────────────────────────────────────────
 const TRIAGE_QUESTIONS = [
-  { id: 'q1', text: 'Is anyone unconscious or unresponsive?' },
-  { id: 'q2', text: 'Is there heavy or uncontrolled bleeding?' },
-  { id: 'q3', text: 'Is anyone trapped in the vehicle?' },
+  { id: 'q_unconscious', text: 'Is anyone unconscious, unresponsive, or experiencing seizures?' },
+  { id: 'q_bleeding', text: 'Is there heavy, pulsating, or uncontrolled bleeding?' },
+  { id: 'q_breathing', text: 'Are they experiencing severe breathing difficulties or choking?' },
+  { id: 'q_spine', text: 'Is there a suspected head, neck, or spine injury (unable to feel/move limbs)?' },
+  { id: 'q_special', text: 'Is the patient a child under 12 or a pregnant woman?' },
+  { id: 'q_trapped', text: 'Is the victim trapped inside the vehicle or under debris?' },
 ];
+
+export interface RoutedHospital {
+  name: string;
+  category: string;
+  distance: string;
+  eta: string;
+  phone: string;
+  address: string;
+  reason: string;
+  severity: 'critical' | 'moderate' | 'minor';
+  decisionPath: string[];
+  matchedRule: string;
+  actionSteps: string[];
+}
+
+export function determineHospitalAndReason(answers: Record<string, boolean> | null): RoutedHospital {
+  const fallback: RoutedHospital = {
+    name: 'General Hospital Emergency',
+    category: 'Hospital Emergency Room',
+    distance: '0.9 km',
+    eta: '2 min',
+    phone: '080-44112233',
+    address: '15, Hospital Road',
+    reason: 'Standard Emergency Room routing due to missing triage check details.',
+    severity: 'minor',
+    matchedRule: 'else (fallback)',
+    decisionPath: [
+      '// No triage details available',
+      'else {',
+      '  recommend("General Hospital Emergency");',
+      '}'
+    ],
+    actionSteps: ['Please stay calm and contact the emergency line.']
+  };
+
+  if (!answers) return fallback;
+
+  if (answers['q_unconscious'] || answers['q_spine']) {
+    return {
+      name: 'AIIMS Advanced Trauma Unit',
+      category: 'Level-1 Advanced Trauma & Neuro Centre',
+      distance: '2.4 km',
+      eta: '6 min',
+      phone: '011-26588500',
+      address: 'NH-48, Bypass Road',
+      reason: 'Unconsciousness or suspected neck/spine trauma requires immediate access to neurosurgeons, spinal stabilization, and rapid head CT imaging available only at a Level-1 Advanced Trauma Centre.',
+      severity: 'critical',
+      matchedRule: 'unconscious || spine_injury',
+      decisionPath: [
+        'if (unconscious || spine_injury) {',
+        '  // Required: Neuro, CT Scan, Spine Board',
+        '  recommend("AIIMS Advanced Trauma Unit");',
+        '}'
+      ],
+      actionSteps: [
+        "DO NOT move the victim to prevent permanent spinal cord damage.",
+        "Keep the victim warm and talk to them to check level of consciousness.",
+        "Clear airway gently without tilting the head or neck."
+      ]
+    };
+  } else if (answers['q_trapped']) {
+    return {
+      name: 'City Trauma & Emergency Centre',
+      category: 'Emergency & Extrication Trauma Hub',
+      distance: '1.2 km',
+      eta: '3 min',
+      phone: '080-22224444',
+      address: 'MG Road, Sector 12',
+      reason: 'Being trapped inside a vehicle requires a facility with integrated fire/rescue coordination and quick access to orthopedic and general trauma surgery.',
+      severity: 'critical',
+      matchedRule: 'trapped_in_vehicle',
+      decisionPath: [
+        'else if (trapped_in_vehicle) {',
+        '  // Required: Rescue/extrication + orthopedic surgery',
+        '  recommend("City Trauma & Emergency Centre");',
+        '}'
+      ],
+      actionSteps: [
+        "Turn off the vehicle's ignition to prevent spark/fire hazard.",
+        "Wait for professional extrication team unless there is immediate fire/submersion risk.",
+        "Cover the victim with a jacket to protect from glass shards."
+      ]
+    };
+  } else if (answers['q_bleeding'] || answers['q_breathing']) {
+    return {
+      name: 'General Hospital Emergency',
+      category: 'Major Resuscitation & ER Care',
+      distance: '0.9 km',
+      eta: '2 min',
+      phone: '080-44112233',
+      address: '15, Hospital Road',
+      reason: 'Severe bleeding or breathing difficulties require immediate airway management, chest tubes, and active blood transfusions available at a fully-equipped General Hospital Emergency Room.',
+      severity: 'moderate',
+      matchedRule: 'bleeding || breathing_difficulty',
+      decisionPath: [
+        'else if (heavy_bleeding || breathing_difficulty) {',
+        '  // Required: Resuscitation, blood bank, airway control',
+        '  recommend("General Hospital Emergency");',
+        '}'
+      ],
+      actionSteps: [
+        "Apply firm, continuous pressure to any bleeding wounds using clean cloth.",
+        "Keep the patient sitting upright if they have difficulty breathing.",
+        "Do not give any food or liquids to the patient."
+      ]
+    };
+  } else if (answers['q_special']) {
+    return {
+      name: "St. John's Medical College",
+      category: 'Specialized Pediatric & OBGYN ER Wing',
+      distance: '3.4 km',
+      eta: '9 min',
+      phone: '080-22065010',
+      address: 'Koramangala',
+      reason: 'Pediatric and maternal patients have unique physiological responses to trauma. They need specialized neonatal, pediatric, or obstetric emergency care.',
+      severity: 'moderate',
+      matchedRule: 'pediatric || pregnant',
+      decisionPath: [
+        'else if (pediatric_or_pregnant) {',
+        '  // Required: Neonatal/Ped ER specialist',
+        '  recommend("St. John\'s Medical College");',
+        '}'
+      ],
+      actionSteps: [
+        "Inform dispatcher that the patient is a child or pregnant woman.",
+        "Keep a pregnant patient lying on her LEFT side to optimize blood flow.",
+        "Speak gently to comfort the child or mother."
+      ]
+    };
+  } else {
+    return {
+      name: 'Sunrise Urgent Care Clinic',
+      category: 'Community Urgent Care & First-Aid Clinic',
+      distance: '0.4 km',
+      eta: '1 min',
+      phone: '080-11223344',
+      address: 'Near Petrol Pump',
+      reason: 'For minor injuries (conscious, breathing normally, no severe bleeding or head/spine risk), a local urgent care clinic is optimal to avoid overloading major trauma centers.',
+      severity: 'minor',
+      matchedRule: 'else (minor)',
+      decisionPath: [
+        'else {',
+        '  // Required: Basic wound dressing & observation',
+        '  recommend("Sunrise Urgent Care Clinic");',
+        '}'
+      ],
+      actionSteps: [
+        "Clean minor scrapes or cuts with clean water if available.",
+        "Apply standard sterile bandages and dress the wounds.",
+        "Move the patient safely to the sidewalk away from moving traffic."
+      ]
+    };
+  }
+}
 
 export const TriageScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [currentQ, setCurrentQ] = useState(0);
-  const [yesCount, setYesCount] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const setTriageLevel = useIncidentStore((s) => s.setTriageLevel);
+  const setTriageAnswers = useIncidentStore((s) => s.setTriageAnswers);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -145,17 +303,26 @@ export const TriageScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleAnswer = (yes: boolean) => {
-    const newYes = yesCount + (yes ? 1 : 0);
+    const questionId = TRIAGE_QUESTIONS[currentQ].id;
+    const newAnswers = { ...answers, [questionId]: yes };
 
     if (currentQ < TRIAGE_QUESTIONS.length - 1) {
       animateTransition(() => {
         setCurrentQ(currentQ + 1);
-        setYesCount(newYes);
+        setAnswers(newAnswers);
       });
     } else {
-      if (newYes >= 2) setTriageLevel('critical');
-      else if (newYes === 1) setTriageLevel('moderate');
-      else setTriageLevel('minor');
+      let level: 'critical' | 'moderate' | 'minor' = 'minor';
+      if (newAnswers['q_unconscious'] || newAnswers['q_spine'] || newAnswers['q_trapped']) {
+        level = 'critical';
+      } else if (newAnswers['q_bleeding'] || newAnswers['q_breathing'] || newAnswers['q_special']) {
+        level = 'moderate';
+      } else {
+        level = 'minor';
+      }
+
+      setTriageLevel(level);
+      setTriageAnswers(newAnswers);
       navigation.navigate('MedicalDetails');
     }
   };
@@ -210,7 +377,7 @@ export const TriageScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
 // ─── MEDICAL EMERGENCY SCREEN ─────────────────────────────────────────────────
 export const MedicalEmergencyScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const { triageLevel, setLocation, locationOverride } = useIncidentStore();
+  const { triageAnswers, setLocation, locationOverride } = useIncidentStore();
   const [placeName, setPlaceName] = useState('Detecting location…');
   const [kmModalVisible, setKmModalVisible] = useState(false);
   const [familyAlerted, setFamilyAlerted] = useState(false);
@@ -218,11 +385,29 @@ export const MedicalEmergencyScreen: React.FC<{ navigation: any }> = ({ navigati
   const [timerStart] = useState(Date.now());
   const [country, setCountry] = useState<CountryEmergency | null>(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
+  const [showCode, setShowCode] = useState(false);
 
-  const severity = triageLevel ?? 'minor';
-  const services = getMedicalServices(severity);
-  const label = getMedicalLabel(severity);
+  const routed = determineHospitalAndReason(triageAnswers);
+  const severity = routed.severity;
   const accentColor = { critical: Colors.red, moderate: Colors.orange, minor: Colors.blue }[severity];
+
+  const recommendedService: MockService = {
+    id: 'routed_rec',
+    name: routed.name,
+    distance: routed.distance,
+    distanceSortKey: parseFloat(routed.distance),
+    phone: routed.phone,
+    address: routed.address,
+    openNow: true,
+    eta: routed.eta,
+    type: routed.category,
+  };
+
+  const rawServices = getMedicalServices(severity);
+  const services = [
+    recommendedService,
+    ...rawServices.filter(s => s.name.toLowerCase() !== routed.name.toLowerCase())
+  ];
 
   useEffect(() => {
     (async () => {
@@ -267,33 +452,12 @@ export const MedicalEmergencyScreen: React.FC<{ navigation: any }> = ({ navigati
     }
   }, []);
 
-  const firstAidSteps = {
-    critical: [
-      "Don't move the victim unless there's fire or water risk",
-      'Apply firm pressure to any bleeding wound with clean cloth',
-      'Keep them warm — lay jacket/blanket over them',
-      'Tilt head back gently if unconscious, to open airway',
-      'Talk to them calmly — keep them conscious',
-    ],
-    moderate: [
-      'Keep the person calm and still',
-      'Check for visible injuries — apply pressure to wounds',
-      'Do not give food or water',
-      'Keep them awake and talking',
-      'Monitor breathing — 12-20 breaths per min is normal',
-    ],
-    minor: [
-      'Move to safety, away from traffic',
-      'Sit down and rest — do not drive',
-      'Call the clinic listed above',
-      'Apply first aid if available',
-    ],
-  }[severity];
+  const firstAidSteps = routed.actionSteps;
 
   return (
     <SafeAreaContainer>
       <GoldenHourTimer startTime={timerStart} />
-      <Header title={`🏥 Medical — ${label}`} onBack={() => navigation.goBack()} color={accentColor} />
+      <Header title={`🏥 Medical — ${routed.name}`} onBack={() => navigation.goBack()} color={accentColor} />
 
       {pumpAlerted && <PumpAlertBanner pumpName={MOCK_FUEL[0].name} />}
 
@@ -314,10 +478,126 @@ export const MedicalEmergencyScreen: React.FC<{ navigation: any }> = ({ navigati
           </TouchableOpacity>
         )}
 
-        <Text style={es.sectionLabel}>{label}s Nearby</Text>
-        {services.map((s) => (
-          <ServiceCard key={s.id} service={s} accentColor={accentColor} />
-        ))}
+        {/* Dynamic Diagnostics Card */}
+        <View style={es.diagnosticsCard}>
+          <View style={es.diagHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ fontSize: 16 }}>🤖</Text>
+              <Text style={es.diagTitle}>Router Diagnostics</Text>
+            </View>
+            <TouchableOpacity onPress={() => setShowCode(!showCode)} style={es.codeToggle}>
+              <Text style={es.codeToggleText}>{showCode ? '💬 Explain Decision' : '💻 View Code Tree'}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {showCode ? (
+            <View style={es.codeBox}>
+              <Text style={es.codeLine}>
+                <Text style={es.codeKeyword}>const</Text> triageAnswers = {JSON.stringify(triageAnswers || {}, null, 2)};
+              </Text>
+              <Text style={es.codeLine} />
+              
+              <View style={routed.matchedRule === 'unconscious || spine_injury' ? es.codeLineActiveBox : null}>
+                <Text style={[es.codeLine, routed.matchedRule === 'unconscious || spine_injury' && es.codeLineActive]}>
+                  <Text style={es.codeKeyword}>if</Text> (triageAnswers.q_unconscious || triageAnswers.q_spine) {'{'}
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'unconscious || spine_injury' && es.codeLineActive]}>
+                  {'  '}recommend(<Text style={es.codeString}>"AIIMS Advanced Trauma Unit"</Text>); <Text style={es.codeComment}>// Level-1 Trauma</Text>
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'unconscious || spine_injury' && es.codeLineActive]}>
+                  {'}'}
+                </Text>
+              </View>
+
+              <View style={routed.matchedRule === 'trapped_in_vehicle' ? es.codeLineActiveBox : null}>
+                <Text style={[es.codeLine, routed.matchedRule === 'trapped_in_vehicle' && es.codeLineActive]}>
+                  <Text style={es.codeKeyword}>else if</Text> (triageAnswers.q_trapped) {'{'}
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'trapped_in_vehicle' && es.codeLineActive]}>
+                  {'  '}recommend(<Text style={es.codeString}>"City Trauma & Emergency Centre"</Text>); <Text style={es.codeComment}>// Extrication</Text>
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'trapped_in_vehicle' && es.codeLineActive]}>
+                  {'}'}
+                </Text>
+              </View>
+
+              <View style={routed.matchedRule === 'bleeding || breathing_difficulty' ? es.codeLineActiveBox : null}>
+                <Text style={[es.codeLine, routed.matchedRule === 'bleeding || breathing_difficulty' && es.codeLineActive]}>
+                  <Text style={es.codeKeyword}>else if</Text> (triageAnswers.q_bleeding || triageAnswers.q_breathing) {'{'}
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'bleeding || breathing_difficulty' && es.codeLineActive]}>
+                  {'  '}recommend(<Text style={es.codeString}>"General Hospital Emergency"</Text>); <Text style={es.codeComment}>// Major ER</Text>
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'bleeding || breathing_difficulty' && es.codeLineActive]}>
+                  {'}'}
+                </Text>
+              </View>
+
+              <View style={routed.matchedRule === 'pediatric || pregnant' ? es.codeLineActiveBox : null}>
+                <Text style={[es.codeLine, routed.matchedRule === 'pediatric || pregnant' && es.codeLineActive]}>
+                  <Text style={es.codeKeyword}>else if</Text> (triageAnswers.q_special) {'{'}
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'pediatric || pregnant' && es.codeLineActive]}>
+                  {'  '}recommend(<Text style={es.codeString}>"St. John's Medical College"</Text>); <Text style={es.codeComment}>// Ped/OBGYN ER</Text>
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'pediatric || pregnant' && es.codeLineActive]}>
+                  {'}'}
+                </Text>
+              </View>
+
+              <View style={routed.matchedRule === 'else (minor)' ? es.codeLineActiveBox : null}>
+                <Text style={[es.codeLine, routed.matchedRule === 'else (minor)' && es.codeLineActive]}>
+                  <Text style={es.codeKeyword}>else</Text> {'{'}
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'else (minor)' && es.codeLineActive]}>
+                  {'  '}recommend(<Text style={es.codeString}>"Sunrise Urgent Care Clinic"</Text>); <Text style={es.codeComment}>// Minor Urgent Care</Text>
+                </Text>
+                <Text style={[es.codeLine, routed.matchedRule === 'else (minor)' && es.codeLineActive]}>
+                  {'}'}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View style={es.rationaleBox}>
+              <Text style={es.matchedRuleLabel}>
+                Route Condition: <Text style={{ fontFamily: 'monospace', fontWeight: 'bold', color: Colors.teal }}>{routed.matchedRule.toUpperCase()}</Text>
+              </Text>
+              <Text style={es.rationaleText}>{routed.reason}</Text>
+              
+              <View style={es.answersSummary}>
+                <Text style={es.answersTitle}>Triage Questionnaire Responses:</Text>
+                {Object.entries(triageAnswers || {}).map(([key, value]) => {
+                  const qText = TRIAGE_QUESTIONS.find(q => q.id === key)?.text ?? key;
+                  return (
+                    <View key={key} style={es.answerRow}>
+                      <Text style={es.answerRowText} numberOfLines={1}>{qText}</Text>
+                      <Text style={[es.answerBadge, value ? es.answerYes : es.answerNo]}>
+                        {value ? 'YES' : 'NO'}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+        </View>
+
+        <Text style={es.sectionLabel}>Recommended Facility Nearby</Text>
+        <View style={es.recommendedFacilityContainer}>
+          <View style={es.recommendedBadge}>
+            <Text style={es.recommendedBadgeText}>⭐ RECOMMENDED DESTINATION</Text>
+          </View>
+          <ServiceCard service={services[0]} accentColor={accentColor} />
+        </View>
+
+        {services.length > 1 && (
+          <>
+            <Text style={es.sectionLabel}>Alternate Medical Facilities Nearby</Text>
+            {services.slice(1).map((s) => (
+              <ServiceCard key={s.id} service={s} accentColor={Colors.slate} />
+            ))}
+          </>
+        )}
 
         <Text style={es.sectionLabel}>Ambulance Services</Text>
         {MOCK_AMBULANCE.slice(0, 2).map((s) => (
@@ -906,4 +1186,163 @@ const es = StyleSheet.create({
   sosOverlayDesc: { fontSize: 14, color: '#ccc', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
   sosOverlayBanner: { backgroundColor: 'rgba(239, 68, 68, 0.15)', borderWidth: 1, borderColor: Colors.red, borderRadius: 10, padding: 12 },
   sosOverlayBannerText: { fontSize: 13, color: Colors.red, fontWeight: '700', textAlign: 'center', lineHeight: 18 },
+
+  // Diagnostics Card
+  diagnosticsCard: {
+    backgroundColor: '#1e1e2e',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#313244',
+    padding: 14,
+    marginVertical: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+  diagHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#313244',
+    paddingBottom: 10,
+    marginBottom: 10,
+  },
+  diagTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#cdd6f4',
+  },
+  codeToggle: {
+    backgroundColor: '#313244',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+  },
+  codeToggleText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#89b4fa',
+  },
+  codeBox: {
+    backgroundColor: '#11111b',
+    borderRadius: 8,
+    padding: 10,
+  },
+  codeLine: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 11,
+    color: '#cdd6f4',
+    lineHeight: 16,
+  },
+  codeLineActiveBox: {
+    backgroundColor: 'rgba(166, 227, 161, 0.15)',
+    borderLeftWidth: 3,
+    borderLeftColor: '#a6e3a1',
+    paddingLeft: 4,
+    marginVertical: 2,
+    borderRadius: 2,
+  },
+  codeLineActive: {
+    color: '#a6e3a1',
+    fontWeight: '700',
+  },
+  codeKeyword: {
+    color: '#cba6f7',
+    fontWeight: '600',
+  },
+  codeString: {
+    color: '#a6e3a1',
+  },
+  codeComment: {
+    color: '#6c7086',
+    fontStyle: 'italic',
+  },
+  rationaleBox: {
+    paddingVertical: 4,
+  },
+  matchedRuleLabel: {
+    fontSize: 11,
+    color: '#a6adc8',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  rationaleText: {
+    fontSize: 13,
+    color: '#cdd6f4',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  answersSummary: {
+    backgroundColor: '#11111b',
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+  },
+  answersTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#89b4fa',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  answerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  answerRowText: {
+    fontSize: 12,
+    color: '#a6adc8',
+    flex: 1,
+    marginRight: 10,
+  },
+  answerBadge: {
+    fontSize: 10,
+    fontWeight: '800',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  answerYes: {
+    backgroundColor: '#f38ba822',
+    color: '#f38ba8',
+  },
+  answerNo: {
+    backgroundColor: '#a6e3a122',
+    color: '#a6e3a1',
+  },
+  recommendedFacilityContainer: {
+    borderWidth: 2,
+    borderColor: '#f9e2af',
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 12,
+    backgroundColor: 'rgba(249, 226, 175, 0.05)',
+  },
+  recommendedBadge: {
+    backgroundColor: '#f9e2af',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+    marginLeft: 6,
+    marginTop: 2,
+  },
+  recommendedBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#1e1e2e',
+    letterSpacing: 0.5,
+  },
 });

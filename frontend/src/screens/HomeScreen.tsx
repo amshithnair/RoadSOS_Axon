@@ -49,7 +49,7 @@ const EmBtn: React.FC<BtnProps> = ({ icon, title, subtitle, color, onPress, size
   const titleSize = isLarge ? 16 : isSmall ? 12 : 14;
 
   return (
-    <Animated.View style={{ transform: [{ scale }], width: width ?? '100%' }}>
+    <Animated.View style={{ transform: [{ scale }], width: width as any }}>
       <TouchableOpacity
         style={[
           styles.emBtn,

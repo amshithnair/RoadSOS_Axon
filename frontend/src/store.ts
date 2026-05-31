@@ -37,6 +37,7 @@ export interface IncidentState {
   // Current incident
   emergencyType: string | null;
   triageLevel: 'critical' | 'moderate' | 'minor' | null;
+  triageAnswers: Record<string, boolean> | null;
   location: { lat: number; lng: number } | null;
   kmMarker: string | null;
   currentIncidentId: string | null;
@@ -62,6 +63,7 @@ export interface IncidentState {
   setMedicalDetails: (details: MedicalDetails) => void;
   setEmergencyType: (type: string) => void;
   setTriageLevel: (level: 'critical' | 'moderate' | 'minor') => void;
+  setTriageAnswers: (answers: Record<string, boolean>) => void;
   setLocation: (lat: number, lng: number) => void;
   setKmMarker: (marker: string) => void;
   setCurrentIncident: (id: string) => void;
@@ -91,6 +93,7 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
   medicalDetails: defaultMedical,
   emergencyType: null,
   triageLevel: null,
+  triageAnswers: null,
   location: null,
   kmMarker: null,
   currentIncidentId: null,
@@ -136,6 +139,7 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
   },
   setEmergencyType: (type) => set({ emergencyType: type }),
   setTriageLevel: (level) => set({ triageLevel: level }),
+  setTriageAnswers: (answers) => set({ triageAnswers: answers }),
   setLocation: (lat, lng) => set({ location: { lat, lng } }),
   setKmMarker: (marker) => set({ kmMarker: marker }),
   setCurrentIncident: (id) => set({ currentIncidentId: id }),
@@ -155,6 +159,7 @@ export const useIncidentStore = create<IncidentState>((set, get) => ({
     set({
       emergencyType: null,
       triageLevel: null,
+      triageAnswers: null,
       location: null,
       kmMarker: null,
       currentIncidentId: null,

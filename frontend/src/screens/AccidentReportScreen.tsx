@@ -75,9 +75,20 @@ export const AccidentReportScreen: React.FC<{ navigation: any }> = ({ navigation
       if (Platform.OS === 'web' && navigator?.clipboard) {
         await navigator.clipboard.writeText(text);
       } else {
-        // Fallback for older RN
-        const { default: Clipboard } = await import('@react-native-clipboard/clipboard').catch(() => ({ default: null }));
-        if (Clipboard) Clipboard.setString(text);
+        // Fallback for older RN / Native Clipboard
+        try {
+          // @ts-ignore
+          const Clipboard = require('@react-native-clipboard/clipboard');
+          if (Clipboard && Clipboard.setString) {
+            Clipboard.setString(text);
+          } else {
+            const { Clipboard: RNClipboard } = require('react-native');
+            if (RNClipboard) RNClipboard.setString(text);
+          }
+        } catch {
+          const { Clipboard: RNClipboard } = require('react-native');
+          if (RNClipboard) RNClipboard.setString(text);
+        }
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
