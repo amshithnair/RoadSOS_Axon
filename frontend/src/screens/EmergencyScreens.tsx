@@ -82,7 +82,7 @@ const ServiceCard: React.FC<{
     <View style={es.serviceCardTop}>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-          <Text style={es.serviceName}>{service.name}</Text>
+          <Text style={es.serviceName} numberOfLines={2} adjustsFontSizeToFit>{service.name}</Text>
           {showOpenTag && service.openNow !== undefined && (
             <View style={[es.openTag, { backgroundColor: service.openNow ? '#dcfce7' : '#f3f4f6' }]}>
               <Text style={[es.openTagText, { color: service.openNow ? Colors.greenDark : Colors.gray500 }]}>
@@ -106,14 +106,14 @@ const ServiceCard: React.FC<{
           style={[es.actionBtn, { backgroundColor: Colors.green }]}
           onPress={() => callNumber(service.phone)}
         >
-          <Text style={es.actionBtnText}>📞 Call</Text>
+          <Text style={es.actionBtnText} numberOfLines={1} adjustsFontSizeToFit>📞 Call</Text>
         </TouchableOpacity>
       ) : null}
       <TouchableOpacity
         style={[es.actionBtn, { backgroundColor: accentColor, flex: service.phone ? 1 : 2 }]}
         onPress={() => openMaps(service.name, service.address)}
       >
-        <Text style={es.actionBtnText}>🗺 Navigate</Text>
+        <Text style={es.actionBtnText} numberOfLines={1} adjustsFontSizeToFit>🗺 Navigate</Text>
       </TouchableOpacity>
     </View>
   </View>

@@ -9,6 +9,8 @@ import {
   Dimensions,
   FlatList,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useIncidentStore, EmergencyContact } from '../store';
 import {
@@ -393,6 +395,7 @@ export const SetupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         title="Setup Profile"
         onBack={() => navigation.goBack()}
       />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={[ss.scrollContent, { paddingBottom: 48 }]}>
         {/* Basic Info */}
         <Text style={ss.sectionTitle}>👤 Your Info</Text>
@@ -479,6 +482,7 @@ export const SetupScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaContainer>
   );
 };
