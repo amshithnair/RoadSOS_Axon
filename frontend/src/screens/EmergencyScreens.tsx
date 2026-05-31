@@ -340,7 +340,13 @@ export const MedicalEmergencyScreen: React.FC<{ navigation: any }> = ({ navigati
         {severity === 'critical' && (
           <Button
             title="🩺 Open Life-Saving CPR Guide"
-            onPress={() => navigation.navigate('SupportFlows', { screen: 'CPRGuide' })}
+            onPress={() => {
+              try {
+                navigation.getParent()?.navigate('SupportFlows', { screen: 'CPRGuide' });
+              } catch {
+                navigation.navigate('SupportFlows', { screen: 'CPRGuide' });
+              }
+            }}
             style={{ backgroundColor: Colors.red, marginVertical: 8 }}
           />
         )}
@@ -680,7 +686,13 @@ export const SilentSOSScreen: React.FC<{ navigation: any }> = ({ navigation }) =
     if (tapTimer.current) clearTimeout(tapTimer.current);
     if (tapCount.current >= 3) {
       tapCount.current = 0;
-      navigation.navigate('HomeMain');
+      // SilentSOSScreen is nested: HomeStack > EmergencyFlows > EmergencySOS
+      // Need to go up two levels to reach HomeMain
+      try {
+        navigation.getParent()?.navigate('HomeMain');
+      } catch {
+        navigation.navigate('HomeMain');
+      }
     } else {
       tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2000);
     }

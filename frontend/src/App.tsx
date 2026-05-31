@@ -77,6 +77,7 @@ function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeMain" component={HomeScreen} />
+      <Stack.Screen name="Setup" component={SetupScreen} />
       <Stack.Screen name="EmergencyFlows" component={EmergencyStack} />
       <Stack.Screen name="SupportFlows" component={SupportStack} />
     </Stack.Navigator>
