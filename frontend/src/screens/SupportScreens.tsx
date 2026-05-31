@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert,
   Platform,
-  Clipboard,
+  KeyboardAvoidingView,
 } from 'react-native';
 import {
   SafeAreaContainer,
@@ -479,6 +479,7 @@ export const SafeArrivalScreen: React.FC<{ navigation: any }> = ({ navigation })
   return (
     <SafeAreaContainer>
       <Header title="🛣 Safe Arrival" onBack={() => navigation.goBack()} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={[ss.content, { paddingBottom: 48 }]}>
         <Text style={ss.safeArrivalDesc}>Going on a long drive? Set a timer. If you don't check in, your contacts will be notified.</Text>
 
@@ -542,6 +543,7 @@ export const SafeArrivalScreen: React.FC<{ navigation: any }> = ({ navigation })
           style={{ marginTop: 24, backgroundColor: Colors.amber }}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaContainer>
   );
 };
@@ -558,7 +560,7 @@ const ss = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.gray200,
   },
   mapPlaceholderText: { fontSize: 16, color: Colors.gray600, fontWeight: '600' },
-  statusGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  statusGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
   statusCard: {
     flex: 1, borderRadius: 10, padding: 10, alignItems: 'center',
     backgroundColor: '#fff', borderWidth: 1,
@@ -663,8 +665,8 @@ const ss = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: Colors.gray900, backgroundColor: '#fff',
   },
   label: { fontSize: 14, fontWeight: '600', color: Colors.gray700 },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
-  timeField: { flex: 1, alignItems: 'center' },
+  timeRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 8 },
+  timeField: { flex: 1, minWidth: 80, alignItems: 'center' },
   timeInput: {
     width: '100%', borderWidth: 1, borderColor: Colors.gray300, borderRadius: 10,
     padding: 12, fontSize: 28, fontWeight: '800', color: Colors.gray900, textAlign: 'center', backgroundColor: '#fff',

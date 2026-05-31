@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   StyleSheet,
   ActivityIndicator,
   Platform,
@@ -13,7 +12,9 @@ import {
   Modal,
   ScrollView,
   Pressable,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -54,7 +55,7 @@ interface SafeAreaContainerProps {
   style?: any;
 }
 export const SafeAreaContainer: React.FC<SafeAreaContainerProps> = ({ children, style }) => (
-  <SafeAreaView style={[styles.safeContainer, style]}>{children}</SafeAreaView>
+  <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safeContainer, style]}>{children}</SafeAreaView>
 );
 
 // ─── HEADER ──────────────────────────────────────────────────────────────────
@@ -374,9 +375,9 @@ export const RoleCard: React.FC<RoleCardProps> = ({ icon, role, description, isM
     disabled={isTaken && !isMine}
   >
     <Text style={styles.roleCardIcon}>{icon}</Text>
-    <View style={{ flex: 1 }}>
-      <Text style={[styles.roleCardTitle, isTaken && !isMine && { color: Colors.gray400 }]}>{role}</Text>
-      <Text style={[styles.roleCardDesc, isTaken && !isMine && { color: Colors.gray400 }]}>{description}</Text>
+    <View style={{ flex: 1, paddingRight: 8 }}>
+      <Text style={[styles.roleCardTitle, isTaken && !isMine && { color: Colors.gray400 }]} numberOfLines={2}>{role}</Text>
+      <Text style={[styles.roleCardDesc, isTaken && !isMine && { color: Colors.gray400 }]} numberOfLines={3}>{description}</Text>
     </View>
     {isMine && <View style={styles.myBadge}><Text style={styles.myBadgeText}>YOU</Text></View>}
     {isTaken && !isMine && <Text style={{ color: Colors.gray400, fontSize: 12 }}>Taken</Text>}
@@ -463,10 +464,11 @@ export const KmMarkerModal: React.FC<KmMarkerModalProps> = ({ visible, onClose, 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Animated.View style={[styles.modalSheet, { transform: [{ translateY: slideAnim }] }]}>
-          <Pressable>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>📍 Enter KM Marker</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', flex: 1, justifyContent: 'flex-end' }}>
+          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: slideAnim }] }]}>
+            <Pressable>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>📍 Enter KM Marker</Text>
             <Text style={styles.modalSubtitle}>For highway emergencies when GPS address is unclear</Text>
 
             <Text style={styles.inputLabel}>Highway Name</Text>
@@ -521,6 +523,7 @@ export const KmMarkerModal: React.FC<KmMarkerModalProps> = ({ visible, onClose, 
             </TouchableOpacity>
           </Pressable>
         </Animated.View>
+        </KeyboardAvoidingView>
       </Pressable>
     </Modal>
   );
@@ -580,20 +583,23 @@ interface BottomTabsProps {
   activeTab: string;
   tabs: Array<{ id: string; icon: string; label: string; action: () => void }>;
 }
-export const BottomTabs: React.FC<BottomTabsProps> = ({ activeTab, tabs }) => (
-  <View style={styles.bottomTabs}>
-    {tabs.map((tab) => {
-      const isActive = activeTab === tab.id;
-      return (
-        <TouchableOpacity key={tab.id} style={styles.tabButton} onPress={tab.action}>
-          <Text style={[styles.tabIcon, isActive && { opacity: 1 }]}>{tab.icon}</Text>
-          <Text style={[styles.tabLabel, isActive && { color: Colors.red, fontWeight: '700' }]}>{tab.label}</Text>
-          {isActive && <View style={styles.tabIndicator} />}
-        </TouchableOpacity>
-      );
-    })}
-  </View>
-);
+export const BottomTabs: React.FC<BottomTabsProps> = ({ activeTab, tabs }) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.bottomTabs, { paddingBottom: Math.max(insets.bottom, 4) }]}>
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id;
+        return (
+          <TouchableOpacity key={tab.id} style={styles.tabButton} onPress={tab.action}>
+            <Text style={[styles.tabIcon, isActive && { opacity: 1 }]}>{tab.icon}</Text>
+            <Text style={[styles.tabLabel, isActive && { color: Colors.red, fontWeight: '700' }]}>{tab.label}</Text>
+            {isActive && <View style={styles.tabIndicator} />}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 // ─── SPINNER ─────────────────────────────────────────────────────────────────
 export const Spinner: React.FC = () => <ActivityIndicator size="large" color={Colors.red} />;
@@ -834,7 +840,6 @@ const styles = StyleSheet.create({
   bottomTabs: {
     flexDirection: 'row', backgroundColor: '#fff',
     borderTopWidth: 1, borderTopColor: Colors.gray200,
-    paddingBottom: Platform.OS === 'ios' ? 20 : 4,
   },
   tabButton: { flex: 1, alignItems: 'center', paddingVertical: 8, position: 'relative' },
   tabIcon: { fontSize: 22, marginBottom: 3, opacity: 0.7 },
