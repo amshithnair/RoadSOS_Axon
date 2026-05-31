@@ -1,0 +1,456 @@
+
+ROADSoS
+User Flow Document
+React Native Android App
+
+
+
+Part 1 — Basic User Flow
+A single-page overview of every flow in the app. Use this to understand the full navigation map before diving into details.
+
+1.1  App Entry & Onboarding
+
+
+1.2  Home Screen → Emergency Type
+Home screen has 6 large buttons. Each routes to a different flow.
+
+
+1.3  All Six Emergency Flows — Summary
+
+
+
+
+
+
+
+
+
+
+
+
+
+1.4  Supporting Flows — Summary
+
+
+Part 2 — Detailed User Flow
+Screen-by-screen breakdown. Every screen has: what's on it, what the user does, what happens next, and any technical notes for the developer.
+
+
+Screen 1 — Splash Screen
+
+Screen 2 — Onboarding (3 slides, swipeable)
+
+
+
+Screen 3 — Permissions
+
+Screen 4 — Setup (Skippable, can return any time)
+
+
+Screen 5 — Home Screen
+The main screen. Designed for single-thumb use. No menus. No search. Just the 6 big buttons.
+
+
+
+Screen 6 — Triage Screen
+Three yes/no questions. Fast. Large buttons. Used to route user to right level of care.
+
+
+Screen 7 — Emergency Screen (Medical Mode)
+
+
+Screen 8 — Evacuation Guide
+Shown immediately when user taps Car Fire. Before showing any services — first tell them what to do in the next 90 seconds.
+
+
+Screen 9 — Emergency Screen (Fire Mode)
+
+
+Screen 10 — Breakdown Screen
+Used for both Breakdown and Fuel flows. When accessed from Fuel button, the 'Petrol Pumps' tab is pre-selected.
+
+
+
+Screen 11 — Emergency Screen (Flood Mode)
+
+
+Screen 12 — Silent SOS Screen
+This screen must be designed carefully. It should appear completely inactive to someone looking at the phone from outside.
+
+
+
+Screen 13 — Bystander Entry
+Accessed via the 'I'm a bystander' strip on Home Screen, OR from Emergency Screen of any active incident.
+
+
+Screen 14 — Role Assignment Screen (Incident Merge)
+
+Screen 15 — Bystander Guidance Screen
+
+
+Screen 16 — Medical QR ID Screen
+Accessible from Setup Screen or Profile tab. QR is generated entirely offline.
+
+
+
+Screen 17 — Safe Arrival Setup
+Accessed from Setup Screen or Profile tab. Designed for use before a long highway drive.
+
+
+
+Screen 18 — KM Marker Input (available on Emergency + Breakdown screens)
+Shown as a small link on any screen that displays location: 'Don't know your GPS address? Enter km marker'. Critical for highway emergencies.
+
+
+
+Screen 19 — Incident Map Screen
+A shareable web URL (roadsos.app/incident/[id]) that opens as a screen inside the app. Family members can open it in browser.
+
+
+
+Bottom Tab Navigation
+
+Global Persistent Elements
+
+Developer Notes — Key State & Storage
+
+=== TABLES ===
+-- Table 0 --
+Field | Detail
+Platform | React Native — Android
+Audience | Frontend Developer
+Document contains | Basic User Flow  +  Detailed User Flow per screen
+Emergency types covered | Medical · Fire · Breakdown · Fuel · Flood · Crime
+Special flows | Bystander · Incident Merge · Medical QR · Safe Arrival · Onboarding
+-- Table 1 --
+Legend:  📌 = Screen label / title    ⚡ = User action    → = Navigates to          🔒 = Requires permission    🌐 = Needs internet    📶 = Works offline
+-- Table 2 --
+First Launch Onboarding | →  Permissions Location · Contacts | →  Setup Screen Optional | →  Home Screen Main entry point
+-- Table 3 --
+Return Launch Already set up | →  Home Screen directly Skip onboarding
+-- Table 4 --
+Button | Icon | Goes To | First Screen After
+Accident / Crash | 🚗 | Medical Flow | Triage Screen
+Car Fire | 🔥 | Fire Flow | Emergency Screen (fire mode)
+Vehicle Breakdown | 🔧 | Breakdown Flow | Breakdown Screen
+Out of Fuel | ⛽ | Fuel Flow | Breakdown Screen (fuel filter)
+Flood / Natural | 🌊 | Flood Flow | Emergency Screen (flood mode)
+Crime / Theft | 🚨 | Crime Flow | Silent SOS Screen
+-- Table 5 --
+🚗  Flow 1 — Medical / Accident
+-- Table 6 --
+Home | → | Triage 3 questions | → | Emergency Screen Services + Timer | → | Call / Navigate
+-- Table 7 --
+🔥  Flow 2 — Car Fire
+-- Table 8 --
+Home | → | Evacuation Guide 90-sec steps | → | Emergency Screen Fire brigade + Pump | → | Call / Navigate
+-- Table 9 --
+🔧  Flow 3 — Breakdown
+-- Table 10 --
+Home | → | Breakdown Screen Towing · Puncture · Showroom | → | Call / Navigate
+-- Table 11 --
+⛽  Flow 4 — Out of Fuel
+-- Table 12 --
+Home | → | Breakdown Screen Fuel filter active | → | Nearest Pump Walk or drive | → | Call / Navigate
+-- Table 13 --
+🌊  Flow 5 — Flood / Natural Emergency
+-- Table 14 --
+Home | → | Emergency Screen Flood mode | → | Safe Route Map Elevated ground | → | Call NDRF
+-- Table 15 --
+🚨  Flow 6 — Crime / Theft
+-- Table 16 --
+Home | → | Silent SOS Screen dims | →  Covert alert No sound | Police notified With location
+-- Table 17 --
+Flow | Trigger | Screens Involved
+Bystander Mode | User taps 'I'm a bystander at a crash' | Home → Bystander Screen → Role Assignment → Guidance Steps
+Incident Merge | 2+ users SOS within 200m | Emergency Screen → Merge notification → Role assigned automatically
+Medical QR ID | Profile tab or Setup screen | Setup → Medical ID Form → QR Generated → Screenshot prompt
+Safe Arrival Timer | Setup screen before a drive | Setup → Set destination + ETA → Timer runs in background → SMS on miss
+Pump Dashboard | Pump staff only — separate entry | Login → Alert inbox → Type-specific instructions → Mark resolved
+-- Table 18 --
+ONBOARDING FLOW
+-- Table 19 --
+📱 Splash Screen | 📱 Splash Screen
+📌 ROADSoS logo centred on screen
+📌 Tagline: 'Help finds you.' — below logo
+📌 Duration: 1.5 seconds, then auto-navigate
+→ If first launch → Onboarding Screen 1
+→ If returning user → Home Screen
+-- Table 20 --
+📱 Onboarding — Slide 1 | 📱 Onboarding — Slide 1
+📌 Illustration: person on highway with broken car
+📌 Headline: 'Any emergency. Any device.'
+📌 Body: 'Medical, fire, breakdown, flood — one app handles all.'
+⚡ Swipe right or tap Next → Slide 2
+-- Table 21 --
+📱 Onboarding — Slide 2 | 📱 Onboarding — Slide 2
+📌 Illustration: bystander coordinating at crash scene
+📌 Headline: 'You're never alone.'
+📌 Body: 'Petrol pumps, nearby volunteers, and official services — all alerted instantly.'
+⚡ Swipe right or tap Next → Slide 3
+-- Table 22 --
+📱 Onboarding — Slide 3 | 📱 Onboarding — Slide 3
+📌 Illustration: phone on airplane mode, app still working
+📌 Headline: 'Works without internet.'
+📌 Body: 'Critical data is stored on your phone. No signal? Still works.'
+⚡ Tap 'Get Started' → Permissions Screen
+-- Table 23 --
+📱 Permissions Screen | 📱 Permissions Screen
+📌 Header: 'ROADSoS needs a few permissions to help you'
+📌 Row 1: 📍 Location (Always) — 'To find nearby services instantly'
+📌 Row 2: 📱 Contacts — 'To alert your family in an emergency'
+📌 Row 3: 💬 SMS — 'To send your location to emergency contacts'
+⚡ Tap 'Allow All' → OS permission dialogs appear one by one
+⚡ Tap 'Skip for now' → Permissions granted later on first use
+→ After permissions resolved → Setup Screen
+-- Table 24 --
+📱 Setup Screen | 📱 Setup Screen
+📌 Section A: Emergency Contacts
+📌   — Name field + Phone number field (up to 3 contacts)
+📌   — 'Import from contacts' button
+📌 Section B: Medical Info (for QR ID)
+📌   — Blood Group dropdown (A+, A−, B+, B−, O+, O−, AB+, AB−)
+📌   — Allergies text field
+📌   — Current medications text field
+📌 Section C: Language
+📌   — Toggle: English / हिंदी / ગુજરાતી
+⚡ Tap 'Save & Continue' → Home Screen. Data saved to local storage.
+⚡ Tap 'Skip' → Home Screen. Setup accessible again from Profile tab.
+-- Table 25 --
+HOME SCREEN
+-- Table 26 --
+📱 Home Screen | 📱 Home Screen
+📌 Top bar: ROADSoS logo (left) · Offline indicator (centre) · Profile icon (right)
+📌 Offline indicator: Green dot = online, Orange dot = offline DB active, Red = no data
+📌 Subheading: 'What's the emergency?' in user's selected language
+📌 Button 1: 🚗  Accident / Crash  (red, large, top-left)
+📌 Button 2: 🔥  Car Fire  (orange, large, top-right)
+📌 Button 3: 🔧  Breakdown  (blue, medium, mid-left)
+📌 Button 4: ⛽  Out of Fuel  (purple, medium, mid-right)
+📌 Button 5: 🌊  Flood / Natural  (teal, medium, bottom-left)
+📌 Button 6: 🚨  Crime / Theft  (dark grey, medium, bottom-right)
+📌 Bottom strip: 'I'm a bystander at someone else's accident' — ghost button
+⚡ Tap any button → routes to corresponding flow (see Part 1 Summary)
+⚡ Tap bystander strip → Bystander Screen
+⚡ Tap profile icon (top right) → Setup / Profile Screen
+→ Accident → Triage Screen
+→ Fire → Evacuation Screen
+→ Breakdown → Breakdown Screen
+→ Fuel → Breakdown Screen (fuel filter)
+→ Flood → Emergency Screen (flood)
+→ Crime → Silent SOS Screen
+-- Table 27 --
+🚗  MEDICAL FLOW — Accident / Crash
+-- Table 28 --
+📱 Triage Screen | 📱 Triage Screen
+📌 Header: 'Quick check — 3 questions' with red background
+📌 Progress bar: 3 dots at top — fills as user answers
+📌 Q1: 'Is anyone unconscious?' — YES / NO buttons (full width)
+📌 Q2: 'Is there heavy bleeding?' — YES / NO buttons (full width)
+📌 Q3: 'Is anyone trapped in the vehicle?' — YES / NO buttons (full width)
+⚡ Each answer immediately shows next question (no next button needed)
+📌 After Q3 — routing logic (developer note):
+📌   0 YES → query for clinics/urgent care. Label: 'Nearest Clinic'
+📌   1 YES → query for hospitals with emergency. Label: 'Hospital Emergency'
+📌   2-3 YES → query for trauma centres only. Auto-call ambulance on next screen.
+→ After all 3 answers → Emergency Screen (medical mode, severity passed as param)
+-- Table 29 --
+📱 Emergency Screen — Medical | 📱 Emergency Screen — Medical
+📌 TOP STRIP: Golden Hour Timer — large countdown from 60:00 (red, always visible)
+📌 Location bar: 'Near NH-48, Vadodara' — detected from GPS or km marker input
+📌 If severity = trauma: Blue banner auto-appears: 'Calling ambulance — 108'
+📌 Section: Nearest Services (sorted by distance)
+📌   Card per result: Name · Distance · Phone number · 'Call' button · 'Navigate' button
+📌   Shows: trauma centres OR hospitals OR clinics (based on triage result)
+📌   Shows: Police station card below (always)
+📌   Shows: Petrol pump card (with 'Alerted' tag if ERP alert sent)
+📌 Section: First Aid Steps (collapsible, open by default)
+📌   Step 1: Don't move the victim unless there is fire risk
+📌   Step 2: Keep them warm and still
+📌   Step 3: Tilt head back gently to open airway if unconscious
+⚡ Tap 'Call' on any card → native phone call dialler opens
+⚡ Tap 'Navigate' → opens Google Maps with destination
+⚡ Tap 'Alert Family' button → SMS sent to saved contacts with live location link
+⚡ Tap 'Share Incident' → copies roadsos.app/incident/[id] to clipboard
+⚡ Tap 'I'm a bystander here' → Bystander Screen
+📌 Developer note: Start timer on screen mount. Store start time in local storage.
+📌 Developer note: If offline, show results from local DB with 'Offline data' label.
+-- Table 30 --
+🔥  FIRE FLOW — Car Fire
+-- Table 31 --
+📱 Evacuation Guide Screen | 📱 Evacuation Guide Screen
+📌 Full-screen orange background with 90-second countdown at top
+📌 Step 1 (shows first): TURN OFF IGNITION — large text, icon
+📌 Step 2: GET EVERYONE OUT — move 50m away
+📌 Step 3: DO NOT open bonnet — fire spreads faster
+📌 Step 4: Call fire brigade — number shown large: 101
+📌 Steps auto-advance every 15 seconds OR user taps 'Done, next'
+📌 Bottom persistent button: 'Show nearby fire brigade' — always visible
+⚡ Tap 'Show nearby fire brigade' → Emergency Screen (fire mode)
+→ Auto-advances to Emergency Screen (fire mode) after 90 seconds
+-- Table 32 --
+📱 Emergency Screen — Fire | 📱 Emergency Screen — Fire
+📌 Header: 'Fire Emergency' with orange accent
+📌 Services shown: Fire brigade (priority) · Petrol pump (nearest, with 'Extinguisher ready?' tag)
+📌 Warning card: 'DO NOT use water on fuel fires' — red, always visible
+📌 Police card (for traffic management)
+⚡ Tap 'Call Fire Brigade' → dials 101 (or country-resolved number)
+⚡ Tap 'Alert Family' → SMS with location
+→ Back arrow → Evacuation Guide (not Home — user might need steps again)
+-- Table 33 --
+🔧  BREAKDOWN FLOW — Vehicle Breakdown & Fuel
+-- Table 34 --
+📱 Breakdown Screen | 📱 Breakdown Screen
+📌 Tab bar at top: Towing · Puncture · Petrol Pumps · Showrooms
+📌 Default tab selected: Towing (Breakdown flow) OR Petrol Pumps (Fuel flow)
+📌 Each tab shows a list of results:
+📌   Card: Name · Distance · 'Open Now' green tag OR 'Closed' grey tag · Phone · Navigate
+📌   Results filtered: Open NOW only shown by default (toggle to show all)
+📌   Sorted by: Distance ascending
+📌   Max results: 5 per tab
+📌 Top of screen: Small banner 'Nearest petrol pump alerted — preparing to assist'
+⚡ Tap tab → switches category, re-fetches from Overpass or offline DB
+⚡ Tap 'Call' on card → native dial
+⚡ Tap 'Navigate' → Google Maps
+⚡ Toggle 'Show closed' → re-renders list including closed results
+⚡ Pull to refresh → re-fetches live data if online
+📌 Developer note: Towing tab uses Overpass amenity=car_repair. Puncture uses amenity=tyres.
+📌 Developer note: Show 'Offline data' badge on cards if served from local DB.
+-- Table 35 --
+🌊  FLOOD FLOW — Natural Emergency
+-- Table 36 --
+📱 Emergency Screen — Flood | 📱 Emergency Screen — Flood
+📌 Warning banner: 'DO NOT drive through water — even 15cm can sweep a car'
+📌 Section: Safe Routes — map with elevated ground marked in green
+📌 Section: Emergency contacts — NDRF (1078) · Police (100) · Nearest hospital
+📌 Section: Nearest petrol pump — shown as shelter point
+⚡ Tap NDRF → dials 1078
+⚡ Tap 'Navigate to safe ground' → Google Maps to nearest elevated area
+⚡ Tap 'Alert Family' → SMS with location
+-- Table 37 --
+🚨  CRIME FLOW — Crime / Theft
+-- Table 38 --
+📱 Silent SOS Screen | 📱 Silent SOS Screen
+📌 Screen dims to 10% brightness immediately on entry
+📌 No sounds. No vibration. No notifications visible.
+📌 Screen appears: nearly black, looks like phone is off
+📌 Background: GPS location being sent to saved police contact every 60 seconds
+📌 Background: Creates incident in Firebase with type = CRIME, marked private
+📌 Invisible tap zone (bottom-right corner): tap 3x to cancel SOS silently
+📌 Police nearest station found via Overpass, SMS sent with location
+⚡ 3x tap bottom-right corner → Cancel Silent SOS → back to Home
+📌 Developer note: Use react-native-brightness to set brightness to 5.
+📌 Developer note: Disable all gesture navigation on this screen.
+-- Table 39 --
+👥  BYSTANDER FLOW
+-- Table 40 --
+📱 Bystander — Confirm Screen | 📱 Bystander — Confirm Screen
+📌 Header: 'You're at an accident scene'
+📌 Subtext: 'We'll guide you step by step'
+📌 GPS location confirmed — shows 'Near [place name]'
+⚡ Tap 'Yes, I'm at the scene' → checks Firebase for nearby open incident
+→ If incident found within 200m → Incident Merge → Role Assignment Screen
+→ If no incident found → Bystander Guidance Screen (starts new)
+-- Table 41 --
+📱 Role Assignment Screen | 📱 Role Assignment Screen
+📌 Header: 'Incident #XK29 — 3 people helping' (from Firebase)
+📌 User's assigned role shown in large card, e.g.:
+📌   🩺 YOUR ROLE: Stay with the injured person
+📌   'Follow the first-aid steps on the next screen'
+📌 Below: Other roles shown as taken (greyed out):
+📌   🚑 Calling ambulance — Person 1 (assigned)
+📌   🚦 Directing traffic — Person 2 (assigned)
+📌   🏴 Flagging ambulance — Person 4 (assigned)
+⚡ Tap 'Start my role' → Bystander Guidance Screen
+⚡ Tap 'Swap role' → shows available unassigned roles to choose from
+-- Table 42 --
+📱 Bystander Guidance Screen | 📱 Bystander Guidance Screen
+📌 Role-specific steps shown as numbered list
+📌 Example steps for 'Stay with victim' role:
+📌   Step 1: Do NOT move the victim unless there is a fire
+📌   Step 2: Talk to them calmly. Keep them conscious.
+📌   Step 3: If unconscious, tilt head back to open airway
+📌   Step 4: Apply firm pressure on any bleeding wound
+📌   Step 5: Keep them warm with a jacket or blanket
+⚡ Tap 'Mark as done' on each step → step ticks green, next highlights
+📌 Bottom: Live incident status strip (ambulance ETA if available)
+⚡ Tap 'Ambulance has arrived' → marks incident resolved in Firebase
+-- Table 43 --
+🆔  MEDICAL QR ID FLOW
+-- Table 44 --
+📱 Medical QR ID Screen | 📱 Medical QR ID Screen
+📌 Shows current saved medical info: Blood group · Allergies · Medications · Emergency contact
+📌 QR code displayed large and centred (generated from saved data, no server call)
+📌 Instruction: 'Screenshot this and set as your lock screen'
+⚡ Tap 'Edit info' → inline form to update medical details, QR regenerates instantly
+⚡ Tap 'Download QR' → saves QR as image to phone gallery
+⚡ Tap 'Share' → native share sheet (WhatsApp, SMS, etc.)
+📌 Developer note: Use react-native-qrcode-svg. No API call. Pure local generation.
+📌 Developer note: QR encodes JSON: { name, blood, allergies, meds, contact }
+-- Table 45 --
+⏱️  SAFE ARRIVAL TIMER FLOW
+-- Table 46 --
+📱 Safe Arrival Setup Screen | 📱 Safe Arrival Setup Screen
+📌 Header: 'Going on a long drive?'
+📌 Field 1: Destination name (free text, e.g. 'Mumbai')
+📌 Field 2: Expected arrival time — time picker
+📌 Field 3: Contacts to alert — shows saved emergency contacts (pre-filled)
+📌 Note: 'If you don't check in within 15 mins of ETA, we'll alert your contacts'
+⚡ Tap 'Start timer' → timer starts in background, Home Screen shows active timer bar
+⚡ On arrival: Tap 'I arrived safely' (shown in persistent bottom banner) → timer cancelled
+📌 If not checked in by ETA + 15 min → SMS auto-sent to contacts with last GPS location
+📌 Developer note: Store deadline in AsyncStorage. Check on every app foreground event.
+📌 Developer note: Show persistent 'Safe arrival active — tap when you arrive' bar on Home.
+-- Table 47 --
+📍  KM MARKER INPUT — Cross-screen feature
+-- Table 48 --
+📱 KM Marker Input (Modal / Bottom Sheet) | 📱 KM Marker Input (Modal / Bottom Sheet)
+📌 Slide-up modal (bottom sheet) triggered by 'Enter km marker' link
+📌 Field 1: Highway name — e.g. 'NH-48'
+📌 Field 2: KM number — numeric keyboard, e.g. '142'
+📌 Auto-complete: as user types highway, suggests matching highways from offline DB
+⚡ Tap 'Find services here' → resolves km marker to GPS from offline DB
+⚡ On resolve: modal closes, current screen updates with km-marker-based location and results
+📌 Developer note: Offline DB key format: 'NH48-142'. Returns lat, lng, pump name, hospital name.
+📌 Developer note: If km marker not in DB — fall back to highway midpoint + 5km radius Overpass query.
+-- Table 49 --
+🗺️  INCIDENT MAP — Shareable Live View
+-- Table 50 --
+📱 Incident Map Screen | 📱 Incident Map Screen
+📌 Map centred on incident location. Pin showing accident spot.
+📌 Live status cards (from Firebase, updates in real time):
+📌   ✅ Ambulance called at 10:34 AM
+📌   ✅ Family alerted at 10:34 AM
+📌   🔄 Police — not yet called
+📌   ⏳ Ambulance ETA: ~8 minutes (estimated)
+📌 Responders section: shows how many people are helping and their roles
+⚡ Tap 'Mark as resolved' → updates Firebase status, stops timer
+⚡ Tap 'Share link' → copies URL to clipboard
+📌 Developer note: Screen subscribes to Firebase onValue listener for live updates.
+📌 Developer note: ETA = (distance to hospital in km ÷ 40) in minutes. Display as estimate.
+-- Table 51 --
+BOTTOM NAVIGATION & GLOBAL ELEMENTS
+-- Table 52 --
+Tab | Icon | Screen | Always Visible?
+Home | 🏠 | Home Screen — 6 emergency buttons | Yes
+Profile / Setup | 👤 | Setup Screen — contacts, medical info, language | Yes
+Medical QR | 🆔 | Medical QR ID Screen | Yes
+Safe Arrival | ⏱️ | Safe Arrival Setup Screen | Yes
+-- Table 53 --
+Element | Where shown | Behaviour
+Offline indicator dot | Top bar, all screens | Green = live data. Orange = offline DB. Red = no data at all.
+Safe arrival banner | Home Screen (when timer active) | 'Safe arrival timer active — tap to check in'. Tap = timer cancelled.
+Golden hour timer | Emergency Screen (medical) | Starts at 60:00 on screen mount. Counts down. Turns red under 30 min.
+Petrol pump alerted badge | Emergency + Breakdown screens | Appears automatically once ERP alert is sent. Non-interactive.
+Language | All screens | All text in selected language (English / Hindi / Gujarati).
+-- Table 54 --
+Data | Where stored | When written | When read
+Emergency contacts | AsyncStorage | Setup Screen on save | Emergency Screen, Safe Arrival, SMS alert
+Medical info (blood, allergies) | AsyncStorage | Setup / Medical QR Screen | Medical QR generation
+Selected language | AsyncStorage | Setup Screen | Every screen render
+Safe arrival deadline | AsyncStorage | Safe Arrival Setup on start | Every app foreground event
+Offline emergency DB | AsyncStorage / MMKV | On first launch (bundled JSON) | Overpass fallback on all screens
+Active incident ID | React state + AsyncStorage | When SOS triggered | Incident Map Screen
+Session location | React state only | GPS read on Emergency screen mount | All service fetch calls
+-- Table 55 --
+Build order recommendation for developer: 1. Home Screen (6 buttons, navigation) — 1 day 2. Emergency Screen with Overpass call + Call button — 1 day 3. Triage Screen — half day 4. Breakdown Screen with tabs — 1 day 5. Bystander Screen + Role Assignment — 1 day 6. Medical QR Screen — half day 7. Safe Arrival Timer — half day 8. Silent SOS Screen — half day 9. Onboarding + Permissions + Setup — 1 day 10. Offline DB fallback + KM marker input — 1 day

@@ -1,0 +1,469 @@
+
+ROADSoS
+Frontend Feature List
+React Native Android — Complete Implementation Guide
+
+
+
+Section 1 — Global Features (Every Screen)
+These apply across the entire app. Build these first — they underpin every screen.
+
+1.1  Language System
+
+1.2  Offline Status Indicator
+
+1.3  Navigation
+
+1.4  Location System
+
+1.5  Global UI Rules
+
+Section 2 — Screen-by-Screen Feature List
+
+
+Screen 1 — Splash Screen
+
+Screen 2 — Onboarding (3 slides)
+
+Screen 3 — Permissions
+
+Screen 4 — Setup / Profile (also accessible from Profile tab)
+
+
+Screen 5 — Home Screen
+
+
+Screen 6 — Triage Screen
+
+Screen 7 — Emergency Screen (Medical Mode)
+
+
+Screen 8 — Evacuation Guide
+
+Screen 9 — Emergency Screen (Fire Mode)
+
+
+Screen 10 — Breakdown Screen
+
+
+Screen 11 — Emergency Screen (Flood Mode)
+
+
+Screen 12 — Silent SOS Screen
+
+
+Screen 13 — Bystander Confirm Screen
+
+Screen 14 — Role Assignment Screen
+
+Screen 15 — Bystander Guidance Screen
+
+
+Screen 16 — Medical QR ID Screen
+
+
+Screen 17 — Safe Arrival Setup Screen
+
+
+Screen 18 — KM Marker Input (Bottom Sheet Modal)
+
+
+Screen 19 — Incident Map Screen
+
+Section 3 — Reusable UI Component Library
+Build these components once. Use everywhere. Do not duplicate logic across screens.
+
+
+Section 4 — Libraries, Permissions & Storage
+
+4.1  Required Libraries
+
+4.2  Permissions Required
+
+4.3  AsyncStorage Keys Reference
+
+Section 5 — Recommended Build Order
+Follow this order. Each phase produces a demo-able product. Never be in a state where nothing works.
+
+
+=== TABLES ===
+-- Table 0 --
+Field | Detail
+Platform | React Native — Android (Expo managed workflow)
+Total screens | 19 screens across 8 flows
+Total features | ~90 frontend features documented
+Priority scale | P1 = Must have for demo  |  P2 = Should have  |  P3 = Nice to have
+Offline scale | ✅ Full  |  ⚠️ Partial  |  ❌ Requires internet
+Document for | Frontend developer — all UI, logic, state, and interaction requirements
+-- Table 1 --
+How to read this document: →  Section 1: Global features that apply to every screen (read this first) →  Section 2: Screen-by-screen feature tables — every screen has its own feature list →  Section 3: UI component library — reusable components to build once, use everywhere →  Section 4: Permissions, libraries, and storage reference →  Section 5: Priority build order
+-- Table 2 --
+Feature | Type | Priority | Offline? | Notes
+Language toggle | State / UI | P1 | ✅ Full | English · Hindi · Gujarati. Stored in AsyncStorage.
+All UI strings externalised | Architecture | P1 | ✅ Full | No hardcoded English text anywhere in JSX. All from i18n file.
+Language persists on restart | State | P1 | ✅ Full | Read from AsyncStorage on app launch.
+Language toggle on Setup screen | UI | P1 | ✅ Full | 3-option selector. Changes all text immediately.
+Emergency numbers localised | Logic | P1 | ✅ Full | 108/100/101 for IN, 911 for US, 999 for UK etc.
+-- Table 3 --
+Feature | Type | Priority | Offline? | Notes
+Green dot — live data | UI | P1 | ✅ Full | Overpass API reachable. Shown top bar every screen.
+Orange dot — offline DB | UI | P1 | ✅ Full | API unreachable, serving bundled JSON data.
+Red dot — no data | UI | P1 | ✅ Full | API failed AND no offline DB loaded yet.
+'Offline data' badge on cards | UI | P1 | ✅ Full | Small badge on each result card when served from local DB.
+Auto-retry when back online | Logic | P2 | N/A | When connectivity restored, silently refresh results.
+-- Table 4 --
+Feature | Type | Priority | Offline? | Notes
+Bottom tab bar — 4 tabs | UI | P1 | ✅ Full | Home · Profile · Medical QR · Safe Arrival
+Back navigation | UI | P1 | ✅ Full | Top-left back arrow on all non-home screens.
+Android hardware back button | UI | P1 | ✅ Full | Handle correctly on every screen. Crime/Silent SOS = disabled.
+Emergency exit to Home | UI | P1 | ✅ Full | Long-press back button (500ms) = force return Home from any screen.
+No navigation animation on SOS screens | UI | P2 | ✅ Full | Instant transition. No slide/fade delay in emergency flows.
+-- Table 5 --
+Feature | Type | Priority | Offline? | Notes
+Get current GPS on screen mount | Logic | P1 | ✅ Full | expo-location getCurrentPositionAsync on every Emergency screen.
+Show place name not coordinates | UI | P1 | ⚠️ Partial | Nominatim reverse geocode. Offline fallback: show lat/lng.
+Location accuracy indicator | UI | P2 | ✅ Full | Show 'Accurate to Xm' below location bar.
+Location permission prompt | Logic | P1 | ✅ Full | Request on Permissions screen. Graceful degradation if denied.
+KM marker manual override | UI / Logic | P1 | ✅ Full | Available on Emergency + Breakdown screens. See Screen 18.
+-- Table 6 --
+Feature | Type | Priority | Offline? | Notes
+Minimum touch target 48x48dp | UI | P1 | ✅ Full | All buttons, cards, icons. Critical for panicked users.
+High contrast text | UI | P1 | ✅ Full | Never grey text on grey background. WCAG AA minimum.
+No loading spinners on Emergency screens | UI | P1 | ✅ Full | Show cached/offline result immediately. Update silently.
+Dark mode not required | UI | P3 | ✅ Full | Light mode only for V1.
+Font size minimum 16sp body | UI | P1 | ✅ Full | Readability under stress and bright sunlight.
+Haptic feedback on SOS trigger | UI | P1 | ✅ Full | Single strong vibration when SOS is confirmed.
+Screen keep-awake on Emergency screen | Logic | P1 | ✅ Full | expo-keep-awake. Screen must not sleep during active incident.
+-- Table 7 --
+ONBOARDING FLOW — 4 Screens
+-- Table 8 --
+Feature | Type | Priority | Offline? | Notes
+ROADSoS logo centred | UI | P1 | ✅ Full | SVG logo. Brand green background.
+Tagline: 'Help finds you.' | UI | P1 | ✅ Full | White text, below logo.
+Auto-navigate after 1.5s | Logic | P1 | ✅ Full | Check AsyncStorage for 'onboardingComplete' flag.
+Route: onboardingComplete=true → Home | Logic | P1 | ✅ Full | Skip onboarding for returning users.
+Route: onboardingComplete=false → Onboarding | Logic | P1 | ✅ Full | First launch only.
+Pre-load offline DB while splash shows | Logic | P1 | ✅ Full | Load bundled JSON into AsyncStorage in background during 1.5s.
+-- Table 9 --
+Feature | Type | Priority | Offline? | Notes
+3 swipeable slides with illustrations | UI | P1 | ✅ Full | Simple SVG illustrations per slide. No external images.
+Slide 1: Any emergency. Any device. | UI | P1 | ✅ Full | Tagline + 2-line body text.
+Slide 2: You're never alone. | UI | P1 | ✅ Full | Petrol pump / bystander concept.
+Slide 3: Works without internet. | UI | P1 | ✅ Full | Offline concept illustration.
+Dot pagination indicator | UI | P1 | ✅ Full | 3 dots. Active dot = green filled. Inactive = grey outline.
+Swipe gesture to advance | UI | P1 | ✅ Full | FlatList horizontal or react-native-swiper.
+'Next' button (right side) | UI | P1 | ✅ Full | On slides 1-2. Changes to 'Get Started' on slide 3.
+'Skip' button (top right) | UI | P2 | ✅ Full | Skips to Permissions screen.
+'Get Started' CTA | UI | P1 | ✅ Full | On slide 3 only. Large green button. → Permissions screen.
+Mark onboardingComplete in AsyncStorage | Logic | P1 | ✅ Full | Written on 'Get Started' tap. Never shown again.
+-- Table 10 --
+Feature | Type | Priority | Offline? | Notes
+Location permission row | UI / Logic | P1 | ✅ Full | Icon + label + description + status badge. expo-location.
+Contacts permission row | UI / Logic | P1 | ✅ Full | expo-contacts. Shows granted/denied badge.
+SMS permission row | UI / Logic | P1 | ✅ Full | expo-sms or react-native-sms. Shows granted/denied badge.
+'Allow All' primary button | UI / Logic | P1 | ✅ Full | Triggers all 3 OS permission dialogs sequentially.
+'Skip for now' ghost button | UI | P1 | ✅ Full | → Setup screen. Permissions requested on first actual use.
+Permission denied graceful handling | Logic | P1 | ✅ Full | If denied: show 'Open Settings' link instead of permission row.
+Status badge per row | UI | P2 | ✅ Full | Green 'Granted' / Red 'Denied' / Grey 'Not asked'.
+→ Setup screen after resolution | Logic | P1 | ✅ Full | Navigate after all dialogs handled (accepted or skipped).
+-- Table 11 --
+Feature | Type | Priority | Offline? | Notes
+Section A: Emergency Contacts | UI | P1 | ✅ Full | Up to 3 contacts. Name + phone per contact.
+'Import from contacts' button | UI / Logic | P2 | ✅ Full | Opens device contacts picker. Prefills name + phone.
+Add / Remove contact rows | UI | P1 | ✅ Full | + Add button below contacts. Trash icon to remove.
+Section B: Medical Info | UI | P1 | ✅ Full | Blood group dropdown + allergies field + medications field.
+Blood group dropdown | UI | P1 | ✅ Full | Options: A+ A- B+ B- O+ O- AB+ AB- · Unknown.
+Allergies text field | UI | P1 | ✅ Full | Free text. Placeholder: 'e.g. Penicillin, Aspirin'.
+Medications text field | UI | P1 | ✅ Full | Free text. Placeholder: 'e.g. Metformin 500mg'.
+Section C: Language selector | UI | P1 | ✅ Full | 3 pill buttons: English · हिंदी · ગુજરાતી. Single select.
+Section D: Safe Arrival shortcut | UI | P2 | ✅ Full | Link to Safe Arrival setup screen.
+'Save' button | UI / Logic | P1 | ✅ Full | Writes all fields to AsyncStorage. Shows success toast.
+Auto-save on field blur | Logic | P2 | ✅ Full | Save each field on unfocus. No explicit save needed.
+Pre-fill from AsyncStorage on mount | Logic | P1 | ✅ Full | Load existing saved values on screen open.
+Form validation | Logic | P1 | ✅ Full | Phone numbers: digits only, min 10 chars. Blood group: required.
+-- Table 12 --
+HOME SCREEN
+-- Table 13 --
+Feature | Type | Priority | Offline? | Notes
+ROADSoS logo top-left | UI | P1 | ✅ Full | Small. Tappable — no action (just brand).
+Offline status dot top-centre | UI | P1 | ✅ Full | See Section 1.2. Always visible.
+Profile icon top-right | UI | P1 | ✅ Full | Tap → Setup/Profile screen.
+'What's the emergency?' heading | UI | P1 | ✅ Full | Localised. Below top bar.
+Button: 🚗 Accident / Crash | UI | P1 | ✅ Full | Red. Large (top-left). → Triage screen.
+Button: 🔥 Car Fire | UI | P1 | ✅ Full | Orange. Large (top-right). → Evacuation Guide.
+Button: 🔧 Breakdown | UI | P1 | ✅ Full | Blue. Medium (mid-left). → Breakdown screen.
+Button: ⛽ Out of Fuel | UI | P1 | ✅ Full | Purple. Medium (mid-right). → Breakdown (fuel filter).
+Button: 🌊 Flood / Natural | UI | P1 | ✅ Full | Teal. Medium (bottom-left). → Emergency (flood mode).
+Button: 🚨 Crime / Theft | UI | P1 | ✅ Full | Slate. Medium (bottom-right). → Silent SOS screen.
+'I'm a bystander' ghost strip | UI | P1 | ✅ Full | Full-width, bottom. Ghost/outline style. → Bystander confirm.
+Safe arrival active banner | UI / Logic | P2 | ✅ Full | Persistent yellow bar when timer active. Tap to check in.
+6-button grid layout | UI | P1 | ✅ Full | 2-column grid. Top 2 = large (accident + fire). Rest = medium.
+Button press animation | UI | P1 | ✅ Full | Scale down 0.96 on press. 100ms spring animation.
+Button labels in selected language | UI | P1 | ✅ Full | All 6 button labels localised.
+-- Table 14 --
+🚗  MEDICAL FLOW
+-- Table 15 --
+Feature | Type | Priority | Offline? | Notes
+Red header bar: 'Quick check' | UI | P1 | ✅ Full | Full-width red header.
+3-dot progress indicator | UI | P1 | ✅ Full | Top of screen. Fills green as user answers.
+Question 1: 'Is anyone unconscious?' | UI | P1 | ✅ Full | Large text. Two full-width YES / NO buttons below.
+Question 2: 'Is there heavy bleeding?' | UI | P1 | ✅ Full | Shown after Q1 answered. Slide-in animation.
+Question 3: 'Is anyone trapped?' | UI | P1 | ✅ Full | Shown after Q2 answered.
+Auto-advance to next question on answer | Logic | P1 | ✅ Full | No 'Next' button. Tapping YES/NO immediately shows Q2.
+YES button style | UI | P1 | ✅ Full | Red background. White text. Large. Left half.
+NO button style | UI | P1 | ✅ Full | Grey outline. Dark text. Large. Right half.
+Severity calculation | Logic | P1 | ✅ Full | Count of YES answers: 0=clinic, 1=hospital, 2-3=trauma.
+Pass severity param to Emergency screen | Logic | P1 | ✅ Full | Route: /emergency?type=MEDICAL&severity=trauma
+Show correct service label per severity | Logic | P1 | ✅ Full | Clinic / Hospital Emergency / Trauma Centre.
+-- Table 16 --
+Feature | Type | Priority | Offline? | Notes
+Golden Hour Timer — 60:00 countdown | UI / Logic | P1 | ✅ Full | Large red numbers. Top strip. Always visible. Starts on mount.
+Timer turns bright red under 30:00 | UI | P1 | ✅ Full | Colour change + subtle pulse animation at 30 min.
+Timer persists in AsyncStorage | Logic | P2 | ✅ Full | If user leaves and returns, timer continues from saved time.
+Location bar: place name | UI | P1 | ⚠️ Partial | Reverse geocoded name. 'Enter km marker' link below.
+Auto-call banner (trauma only) | UI / Logic | P1 | ✅ Full | Blue banner: 'Calling ambulance — 108'. Shows for severity=trauma.
+Auto-dial on trauma severity | Logic | P1 | ✅ Full | Automatically opens phone dialler with ambulance number.
+Results list: trauma centres / hospitals / clinics | UI / Logic | P1 | ⚠️ Partial | Filtered by severity. Overpass query with correct amenity tag.
+Result card: name | UI | P1 | ✅ Full | Bold. First line of card.
+Result card: distance in km | UI | P1 | ✅ Full | E.g. '2.1 km away'. Calculated from GPS.
+Result card: phone number | UI | P1 | ✅ Full | Shown if available from Overpass tags.
+Result card: 'Call' button | UI / Logic | P1 | ✅ Full | Opens native phone dialler with number.
+Result card: 'Navigate' button | UI / Logic | P1 | ✅ Full | Opens Google Maps with destination lat/lng.
+'Offline data' badge on cards | UI | P1 | ✅ Full | Shown when data served from local DB not Overpass.
+Police card (always shown) | UI | P1 | ✅ Full | Below hospital results. Same card style.
+Petrol pump card with 'Alerted' tag | UI / Logic | P1 | ✅ Full | Nearest pump shown. Green 'Alerted' badge after ERP alert sent.
+First Aid Steps section | UI | P1 | ✅ Full | Collapsible accordion. Open by default. Steps as numbered list.
+3 first aid steps (content) | UI | P1 | ✅ Full | Don't move. Keep warm. Tilt head if unconscious.
+'Alert Family' button | UI / Logic | P1 | ⚠️ Partial | Sends SMS to saved contacts with location link. One-tap.
+'Share Incident' button | UI / Logic | P2 | ⚠️ Partial | Copies roadsos.app/incident/[id] to clipboard. Creates Firebase record.
+'I'm a bystander here' link | UI | P1 | ✅ Full | Ghost link at bottom. → Bystander confirm screen.
+Screen keep-awake active | Logic | P1 | ✅ Full | expo-keep-awake activated on mount, deactivated on unmount.
+Haptic on SOS trigger | Logic | P1 | ✅ Full | expo-haptics heavy impact on screen entry.
+-- Table 17 --
+🔥  FIRE FLOW
+-- Table 18 --
+Feature | Type | Priority | Offline? | Notes
+Full-screen orange background | UI | P1 | ✅ Full | No navigation chrome. Immersive emergency mode.
+90-second countdown at top | UI / Logic | P1 | ✅ Full | Counts down from 90. Large white numbers.
+Step 1: TURN OFF IGNITION | UI | P1 | ✅ Full | Large bold text. Icon. White on orange.
+Step 2: GET EVERYONE OUT | UI | P1 | ✅ Full | Auto-shown after 15s or user tap.
+Step 3: DO NOT open bonnet | UI | P1 | ✅ Full | Red warning style within orange screen.
+Step 4: Call 101 (fire brigade) | UI | P1 | ✅ Full | Large number. Country-resolved. Tap to call.
+Auto-advance steps every 15 seconds | Logic | P1 | ✅ Full | Or user taps 'Done, next step'.
+'Done, next step' button | UI | P1 | ✅ Full | Manual advance. White outlined button.
+'Show nearby fire brigade' persistent button | UI | P1 | ✅ Full | Always visible at bottom. → Emergency (fire mode).
+Auto-navigate to Emergency after 90s | Logic | P1 | ✅ Full | Timer ends → navigate automatically.
+-- Table 19 --
+Feature | Type | Priority | Offline? | Notes
+'Fire Emergency' orange header | UI | P1 | ✅ Full | Orange accent colour throughout screen.
+Fire brigade as first result | Logic | P1 | ⚠️ Partial | Overpass amenity=fire_station. Country number shown if no result.
+'DO NOT use water on fuel fires' warning card | UI | P1 | ✅ Full | Red card. Always visible. Cannot be dismissed.
+Nearest petrol pump with extinguisher note | UI | P1 | ✅ Full | Pump card with 'May have extinguisher' tag.
+Police card for traffic management | UI | P1 | ✅ Full | Below fire results.
+'Alert Family' button | UI / Logic | P1 | ⚠️ Partial | Same as medical screen.
+Back → Evacuation Guide (not Home) | Logic | P1 | ✅ Full | Back arrow returns to steps, not to home.
+-- Table 20 --
+🔧  BREAKDOWN & FUEL FLOW
+-- Table 21 --
+Feature | Type | Priority | Offline? | Notes
+Tab bar: Towing · Puncture · Petrol Pumps · Showrooms | UI | P1 | ✅ Full | Horizontal tab bar. Active tab = blue underline.
+Default tab: Towing (Breakdown) / Petrol Pumps (Fuel) | Logic | P1 | ✅ Full | Param passed from Home screen determines default tab.
+Results list per tab | UI / Logic | P1 | ⚠️ Partial | Overpass query changes per tab. Refresh on tab switch.
+Result card: Name + Distance + Phone | UI | P1 | ✅ Full | Same card component as Emergency screen.
+'Open Now' green badge on card | UI / Logic | P2 | ❌ Requires internet | Check Overpass opening_hours tag. Show badge if currently open.
+'Closed' grey badge on card | UI | P2 | ❌ Requires internet | When opening_hours indicates closed.
+'Show closed' toggle | UI | P2 | ✅ Full | Top-right toggle. Default = show open only.
+'Call' button per card | UI / Logic | P1 | ✅ Full | Native dial.
+'Navigate' button per card | UI / Logic | P1 | ✅ Full | Google Maps deep link.
+Max 5 results per tab | Logic | P1 | ✅ Full | Limit Overpass response.
+Sort by distance ascending | Logic | P1 | ✅ Full | Calculate distance. Sort array before render.
+'Petrol pump alerted' banner | UI / Logic | P1 | ✅ Full | Small green banner at top. Appears once pump ERP alert sent.
+Pull-to-refresh | UI / Logic | P2 | ⚠️ Partial | RefreshControl. Re-fetches if online. Shows cached if offline.
+Overpass query per tab | Logic | P1 | ⚠️ Partial | Towing=car_repair, Puncture=tyres, Pumps=fuel, Showrooms=car_dealership.
+-- Table 22 --
+🌊  FLOOD FLOW
+-- Table 23 --
+Feature | Type | Priority | Offline? | Notes
+'DO NOT drive through water' warning banner | UI | P1 | ✅ Full | Teal/red warning. Top of screen. Always visible.
+NDRF contact card: 1078 | UI | P1 | ✅ Full | Prominent. Tap to call. Country-resolved.
+Police card | UI | P1 | ✅ Full | Standard card. 100 or country number.
+Nearest hospital card | UI | P1 | ⚠️ Partial | Overpass query. Offline fallback.
+Nearest petrol pump as shelter point | UI | P1 | ✅ Full | Card labelled 'Possible shelter'. ERP alerted.
+'Navigate to safe ground' button | UI / Logic | P2 | ❌ Requires internet | Google Maps link to highest elevation nearby. Placeholder if offline.
+'Alert Family' button | UI / Logic | P1 | ⚠️ Partial | SMS with location.
+-- Table 24 --
+🚨  CRIME FLOW
+-- Table 25 --
+Feature | Type | Priority | Offline? | Notes
+Dims screen to ~5% brightness on entry | Logic | P1 | ✅ Full | expo-brightness or react-native-brightness. Set to 0.05.
+No sound. No vibration on entry. | Logic | P1 | ✅ Full | Explicitly cancel any pending vibrations.
+Screen appears nearly black | UI | P1 | ✅ Full | Black background. No visible UI elements to casual observer.
+Disable Android back gesture | Logic | P1 | ✅ Full | BackHandler.addEventListener returns true (intercepts back).
+Disable bottom navigation on this screen | UI | P1 | ✅ Full | Hide bottom tab bar completely.
+Hidden 3x-tap cancel zone (bottom-right) | Logic | P1 | ✅ Full | Invisible Pressable covering bottom-right 80x80dp area. 3 taps = cancel.
+GPS location sent to Firebase every 60s | Logic | P1 | ⚠️ Partial | Background interval. Updates Firebase incident record.
+SMS sent to nearest police station | Logic | P1 | ⚠️ Partial | Overpass police query. SMS with 'I need help' + location link.
+SMS sent to saved emergency contacts | Logic | P1 | ⚠️ Partial | Same SMS to contacts. Silent — no toast or confirmation.
+Firebase incident created with type=CRIME | Logic | P2 | ⚠️ Partial | Marked private. No public incident link.
+Cancel SOS: restore brightness + navigate Home | Logic | P1 | ✅ Full | On 3x tap: expo-brightness restore, navigate to Home.
+-- Table 26 --
+👥  BYSTANDER FLOW
+-- Table 27 --
+Feature | Type | Priority | Offline? | Notes
+'You're at an accident scene' header | UI | P1 | ✅ Full | Green header. Calm, directive tone.
+Current location confirmed | UI | P1 | ⚠️ Partial | Shows GPS-resolved place name. Spinner while fetching.
+'Yes, I'm at the scene' primary button | UI / Logic | P1 | ✅ Full | Green. Full width. → check Firebase for nearby incidents.
+Firebase nearby incident check | Logic | P1 | ⚠️ Partial | Query incidents within 200m. Created in last 2 minutes.
+Route: incident found → Role Assignment | Logic | P1 | ⚠️ Partial | Merge into existing incident.
+Route: no incident → Bystander Guidance | Logic | P1 | ✅ Full | Start new bystander flow without incident merge.
+Loading state while checking Firebase | UI | P2 | ⚠️ Partial | Skeleton or spinner. Max 3s timeout then route to guidance.
+-- Table 28 --
+Feature | Type | Priority | Offline? | Notes
+Incident ID + responder count header | UI | P1 | ⚠️ Partial | From Firebase. E.g. 'Incident #XK29 — 3 people helping'.
+User's assigned role — large card | UI | P1 | ⚠️ Partial | Role icon + role name + short instruction. Green card.
+Other roles shown as taken (greyed) | UI | P1 | ⚠️ Partial | Greyed cards showing other responders' roles.
+'Start my role' button | UI / Logic | P1 | ✅ Full | → Bystander Guidance screen with role param.
+'Swap role' button | UI / Logic | P2 | ⚠️ Partial | Shows available unassigned roles. User can choose different role.
+Live responder count (Firebase listener) | Logic | P2 | ⚠️ Partial | onValue listener. Updates count if more people join.
+-- Table 29 --
+Feature | Type | Priority | Offline? | Notes
+Role label at top | UI | P1 | ✅ Full | E.g. '🩺 Your role: Stay with injured person'.
+Numbered step list | UI | P1 | ✅ Full | 5-6 steps per role. Large text. One step highlighted at a time.
+'Mark as done' on each step | UI / Logic | P1 | ✅ Full | Tap → green tick. Next step highlights. No going back.
+Steps content: Stay with victim role | UI | P1 | ✅ Full | 5 first-aid steps. Localised.
+Steps content: Call ambulance role | UI | P1 | ✅ Full | Dials ambulance + confirms called in Firebase.
+Steps content: Direct traffic role | UI | P1 | ✅ Full | Safety instructions for traffic management.
+Steps content: Flag ambulance role | UI | P1 | ✅ Full | Where to stand, how to signal.
+Live ambulance ETA strip (bottom) | UI / Logic | P2 | ⚠️ Partial | Shows 'Ambulance ETA: ~8 min' from Firebase estimate.
+'Ambulance has arrived' button | UI / Logic | P1 | ⚠️ Partial | Marks incident resolved in Firebase. Ends session.
+All steps done state | UI | P1 | ✅ Full | Show 'You've done everything you can. Help is coming.' message.
+-- Table 30 --
+🆔  MEDICAL QR ID FLOW
+-- Table 31 --
+Feature | Type | Priority | Offline? | Notes
+Display current medical info | UI | P1 | ✅ Full | Blood group · Allergies · Medications · Emergency contact. Read from AsyncStorage.
+QR code displayed centred (large) | UI | P1 | ✅ Full | react-native-qrcode-svg. Encodes JSON of medical data.
+QR generated entirely offline | Logic | P1 | ✅ Full | No API call. Pure local SVG generation.
+'Screenshot and set as lock screen' instruction | UI | P1 | ✅ Full | Instructional text below QR.
+'Edit info' link | UI | P1 | ✅ Full | Opens inline editable form. QR regenerates on save.
+'Download QR' button | UI / Logic | P2 | ✅ Full | Saves QR as PNG to gallery. expo-media-library.
+'Share' button | UI / Logic | P2 | ✅ Full | Native share sheet. Share QR image.
+Empty state if no medical info set | UI | P1 | ✅ Full | 'Set up your Medical ID' CTA card. → Setup screen.
+QR re-generates when info is edited | Logic | P1 | ✅ Full | useEffect dependency on medical data.
+-- Table 32 --
+⏱️  SAFE ARRIVAL TIMER FLOW
+-- Table 33 --
+Feature | Type | Priority | Offline? | Notes
+'Going on a long drive?' header | UI | P1 | ✅ Full | Amber accent. Friendly tone.
+Destination name field | UI | P1 | ✅ Full | Free text. e.g. 'Mumbai'. Keyboard: default.
+Expected arrival time picker | UI | P1 | ✅ Full | Time picker. DateTimePicker or custom wheel picker.
+Contacts to alert section | UI | P1 | ✅ Full | Shows saved emergency contacts. Pre-selected. Toggleable.
+'Start timer' button | UI / Logic | P1 | ✅ Full | Writes deadline to AsyncStorage. Navigates to Home.
+Persistent 'Safe arrival active' banner on Home | UI / Logic | P1 | ✅ Full | Yellow bar. Shows destination + ETA. Tap = check-in.
+'I arrived safely' check-in tap on banner | Logic | P1 | ✅ Full | Clears deadline from AsyncStorage. Removes banner.
+Auto-SMS if deadline missed | Logic | P1 | ✅ Full | On app foreground: check if Date.now() > deadline+15min. Send SMS.
+SMS content | Logic | P1 | ⚠️ Partial | [Name] hasn't checked in. Last location: [link]. Sent to all selected contacts.
+Active timer can be cancelled from setup screen | UI / Logic | P2 | ✅ Full | If timer active, show 'Active — cancel?' instead of start form.
+-- Table 34 --
+📍  KM MARKER INPUT — Cross-screen Modal
+-- Table 35 --
+Feature | Type | Priority | Offline? | Notes
+'Enter km marker' link on Emergency + Breakdown screens | UI | P1 | ✅ Full | Small grey link below location bar on relevant screens.
+Bottom sheet modal on tap | UI | P1 | ✅ Full | Slide-up modal. react-native-bottom-sheet or custom.
+Highway name field | UI | P1 | ✅ Full | Text input. e.g. 'NH-48'.
+KM number field | UI | P1 | ✅ Full | Numeric keyboard. e.g. '142'.
+Auto-complete highway suggestions | UI / Logic | P2 | ✅ Full | As user types, suggest matching highways from offline DB keys.
+'Find services here' button | UI / Logic | P1 | ✅ Full | Resolves km marker from offline DB JSON.
+On resolve: update parent screen location | Logic | P1 | ✅ Full | Callback prop updates location state. Triggers new Overpass query.
+Not found fallback | Logic | P1 | ⚠️ Partial | If km key not in DB: show 'Using approximate location' and use highway midpoint GPS.
+Modal closes on successful resolve | Logic | P1 | ✅ Full | Auto-dismiss after 500ms on success.
+-- Table 36 --
+🗺️  INCIDENT MAP — Shareable Live Screen
+-- Table 37 --
+Feature | Type | Priority | Offline? | Notes
+Map centred on incident location | UI | P1 | ❌ Requires internet | react-native-maps with OpenStreetMap tiles.
+Incident pin on map | UI | P1 | ❌ Requires internet | Custom red pin at incident lat/lng.
+Live status cards from Firebase | UI / Logic | P2 | ⚠️ Partial | onValue listener. Real-time updates.
+Status card: Ambulance called | UI | P2 | ⚠️ Partial | Green check + timestamp.
+Status card: Family alerted | UI | P2 | ⚠️ Partial | Green check + timestamp.
+Status card: Police — not called | UI | P2 | ⚠️ Partial | Grey clock icon.
+ETA estimate (distance ÷ 40 km/h) | UI | P2 | ✅ Full | Shown as '~8 minutes'. Clearly labelled as estimate.
+Responders count | UI | P2 | ⚠️ Partial | '3 people helping at this scene'. From Firebase responders map.
+'Mark resolved' button | UI / Logic | P2 | ⚠️ Partial | Updates Firebase status=resolved. Stops timer.
+'Share link' button | UI | P2 | ✅ Full | Copies roadsos.app/incident/[id] to clipboard. Share sheet.
+-- Table 38 --
+Component name | Used on screens | Props / Config | Notes
+EmergencyCard | Emergency · Breakdown · Flood | name, distance, phone, onCall, onNavigate, isOffline | Primary result card. Shows call + navigate buttons.
+GoldenHourTimer | Emergency (medical) | startTime, onExpire | Countdown from 60:00. Colour change at 30 min. Persisted.
+OfflineDot | All screens (top bar) | status: 'live'|'offline'|'none' | Green/orange/red dot with label.
+LocationBar | Emergency · Breakdown | placeName, onKmMarkerPress | Shows place name. KM marker link below.
+AlertFamilyButton | Emergency · Breakdown · Flood | contacts, locationLink | Sends SMS to all saved contacts. Confirmation toast.
+FirstAidSteps | Emergency (medical) | severity, role | Collapsible accordion. Steps based on severity.
+PermissionRow | Permissions screen | type, status, onPress | Icon + label + status badge. Reused for 3 permissions.
+ContactCard | Setup screen | index, onImport, onRemove | Name + phone fields + trash icon. Max 3 instances.
+ResultTab | Breakdown screen | tabs, activeTab, onTabChange | Horizontal tab bar. Handles tab switching.
+EvacuationStep | Evacuation Guide | step, isActive, onDone | Single step display. Auto or manual advance.
+KmMarkerModal | Emergency · Breakdown | onResolve, onClose | Bottom sheet. Highway + km inputs. Offline lookup.
+RoleCard | Role Assignment | role, isMine, isTaken | Shows role icon, title, description. Green if mine, grey if taken.
+GuidanceStep | Bystander Guidance | step, isDone, onMarkDone | Numbered step. Checkbox on right. Green when done.
+PumpAlertBanner | Emergency · Breakdown | pumpName, distance | Green top banner. 'Petrol pump [X] alerted'.
+SafeArrivalBanner | Home screen | destination, eta, onCheckIn | Amber bottom banner. Tap to check in.
+SilentTapZone | Silent SOS | onTripleTap | Invisible Pressable. Counts 3 taps within 2 seconds.
+-- Table 39 --
+Library | Install command | Used for
+expo-location | expo install expo-location | GPS coordinates on Emergency + Breakdown screens.
+expo-sms | expo install expo-sms | Family alert SMS + silent crime SMS.
+expo-contacts | expo install expo-contacts | Import contacts in Setup screen.
+expo-brightness | expo install expo-brightness | Dim screen on Silent SOS entry/exit.
+expo-keep-awake | expo install expo-keep-awake | Screen stays on during active Emergency screen.
+expo-media-library | expo install expo-media-library | Save QR code to gallery.
+expo-sharing | expo install expo-sharing | Share QR image via native share sheet.
+expo-haptics | expo install expo-haptics | Vibration on SOS trigger. Heavy impact.
+@react-native-async-storage/async-storage | npm install @react-native-async-storage/async-storage | All persistent local storage (contacts, settings, offline DB, timers).
+react-native-qrcode-svg | npm install react-native-qrcode-svg | Generate Medical QR ID offline.
+react-native-maps | expo install react-native-maps | Incident map screen. OpenStreetMap tiles.
+@react-navigation/native | npm install @react-navigation/native | Screen navigation. Stack + bottom tabs.
+@react-navigation/bottom-tabs | npm install @react-navigation/bottom-tabs | 4-tab bottom navigation bar.
+@gorhom/bottom-sheet | npm install @gorhom/bottom-sheet | KM Marker modal. Bystander entry slide-up.
+firebase | npm install firebase | Incident merge. Pump alerts. Real-time status.
+i18n-js | npm install i18n-js | Localisation. English / Hindi / Gujarati strings.
+-- Table 40 --
+Permission | When needed | If denied: behaviour
+ACCESS_FINE_LOCATION | All Emergency + Breakdown screens | Show KM marker input as primary option. No GPS fallback.
+ACCESS_COARSE_LOCATION | Fallback if fine denied | Less accurate but functional.
+READ_CONTACTS | Setup screen — import contacts | Show manual entry only. No import button.
+SEND_SMS | Alert Family + Silent SOS | Show 'Open dialler' as fallback. Cannot auto-send.
+WRITE_EXTERNAL_STORAGE | Save QR to gallery | Hide 'Download QR' button. Show 'Share' only.
+VIBRATE | Haptic on SOS trigger | Silent fail. No crash.
+CHANGE_CONFIGURATION | Brightness control (Silent SOS) | Skip dimming. Still show black screen.
+-- Table 41 --
+Key | Value type | Written by | Read by
+onboardingComplete | boolean | Onboarding final slide | Splash screen — routing
+language | 'en'|'hi'|'gu' | Setup screen | Every screen render (i18n)
+emergencyContacts | JSON array [{name, phone}] | Setup screen | Alert Family, Safe Arrival, Crime SMS
+medicalInfo | JSON {blood, allergies, meds} | Setup / Medical QR screen | Medical QR generator
+offlineEmergencyDB | JSON — bundled service data | Splash screen (first load) | All Emergency + Breakdown screens
+kmMarkerDB | JSON — highway km → GPS | Splash screen (first load) | KM Marker modal
+emergencyNumbersDB | JSON — country → numbers | Splash screen (first load) | All call buttons, country resolver
+safeArrivalDeadline | JSON {deadline, destination, contacts} | Safe Arrival setup | App foreground check, Home banner
+activeIncidentId | string | SOS trigger on Emergency screen | Incident Map screen
+goldenHourStart | timestamp number | Emergency (medical) screen mount | GoldenHourTimer component
+-- Table 42 --
+Phase | Days | Screens / Features | Demo-able after
+1 — Navigation skeleton | 0.5 | App.jsx. Bottom tabs. Stack navigator. All screens as empty placeholders. | Can navigate between all screens.
+2 — Home screen | 1 | 6 buttons with correct colours, icons, labels. Navigation to correct screen per button. Language toggle. | Can tap any button. Correct screen opens.
+3 — Emergency screen (core) | 1.5 | Location fetch. Overpass call. Result cards with Call + Navigate. Offline fallback. Golden hour timer. | Live demo: show nearest hospital with call button.
+4 — Triage screen | 0.5 | 3 questions. YES/NO buttons. Severity routing logic. Pass param to Emergency screen. | Full medical flow: Triage → Emergency.
+5 — Breakdown screen | 1 | 4 tabs. Overpass queries per tab. Result cards. Open/closed filter. Offline fallback. | Full breakdown flow.
+6 — Alert Family + SMS | 0.5 | AsyncStorage contacts read. SMS send via expo-sms. Confirmation toast. | Family alert button works end-to-end.
+7 — Medical QR screen | 0.5 | Read AsyncStorage medical info. Generate QR with react-native-qrcode-svg. Download + share. | QR generated offline. Scan demo works.
+8 — Onboarding + Setup + Permissions | 1 | 3-slide onboarding. Permission requests. Setup form. AsyncStorage write/read. | First-launch flow complete.
+9 — Evacuation Guide (fire) | 0.5 | Steps with auto-advance. 90s timer. → Emergency (fire mode). | Fire flow complete.
+10 — Bystander flow | 1 | Confirm screen. Firebase incident check. Role assignment. Guidance steps with mark-done. | Bystander flow works (needs Firebase).
+11 — Silent SOS | 0.5 | Dim screen. Disable back. Hidden 3x tap zone. SMS to contacts. Firebase incident. | Crime flow complete.
+12 — Safe Arrival timer | 0.5 | Setup form. AsyncStorage deadline. Home banner. Foreground check. Auto-SMS. | Safe arrival demo works.
+13 — KM Marker modal | 0.5 | Bottom sheet. Highway + km input. Offline DB lookup. Update parent location. | Works without GPS demo.
+14 — Incident Map | 1 | Firebase real-time listener. Map with pin. Status cards. Share link. | Full incident coordination demo.
+15 — Polish + animations | 1 | Button press animations. Loading states. Toast notifications. Edge cases. | Production-quality feel.
+-- Table 43 --
+Total estimated build time: ~12 development days P1 features only (minimum viable demo): ~8 days Phases 1–9 give you a complete, demo-able product for the hackathon. Phases 10–15 are the differentiators that separate you from every other team.
