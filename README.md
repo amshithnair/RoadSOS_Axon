@@ -433,9 +433,24 @@ docker compose run verify
 
 ---
 
-## 👥 Team
+## 🚀 Team AXON
+### Core Team Members
+*   **Hardil Desai**
+*   **Amshith Nair**
+*   **Madhav Dave**
+*   **Pallavi Rajpurohit**
+*   **Vani Sharma**
+*   **Mitra Mistry**
+*   **Divyanshi Prajapati**
+*   **Deeptanshu Singh**
+*   **Arushi Kumari**
+*   **Riddhima Mehta**
 
-Built with ❤️ for the hackathon.
+## ⚖️ Hackathon Submission & Copyright Declaration
+In accordance with the event's guidelines outlined in the reference document "https://coers.iitm.ac.in/events/Hackathon/2026/rule_book", Team AXON hereby declares and warrants that:
+1. **Originality & Ownership:** The submitted work is an original creation authored entirely by the team members listed above. The team remains the sole owner of the copyright and intellectual property rights of the submitted work, and it does not infringe upon the intellectual property of any third party.
+2. **Usage Rights:** Team AXON hereby grants CoERS, RBG Labs, IIT Madras a non-exclusive, royalty-free right to use the submitted materials for non-commercial purposes, including showcase on respective web pages, social media platforms, and printed publications.
+3. **Model Preference Compliance:** In alignment with Section 8.2 of the guidelines, this project prioritizes open-source foundational intelligence and open architectures (Grok & open-source LLMs deployed via Antfarm and Open Claw infrastructure).
 
 ---
 
