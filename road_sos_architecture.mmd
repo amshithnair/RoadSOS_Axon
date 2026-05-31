@@ -1,0 +1,34 @@
+---
+id: roadsos-architecture-2026
+---
+architecture-beta
+    group backend(cloud)[Backend Services]
+    group clients(cloud)[Clients]
+
+    service api(server)[FastAPI API] in backend
+    service db(database)[PostgreSQL DB] in backend
+    service redis(disk)[Redis] in backend
+    service celery(server)[Celery Worker] in backend
+
+    service whatsappbot(internet)[WhatsApp Bot] in clients
+    service pwa(cloud)[ROADSoS PWA] in clients
+    service erp(cloud)[Petrol Pump ERP Dashboard] in clients
+
+    service overpass(internet)[Overpass API]
+    service google(internet)[Google Places API]
+    service govdata(internet)[Govt Open Data]
+    service sms(internet)[SMS Gateway]
+
+    whatsappbot:R -- L:api
+    pwa:R -- L:api
+    erp:R -- L:api
+
+    api:R -- L:db
+    api:B -- T:redis
+    celery:R -- L:db
+    celery:B -- T:redis
+
+    pwa:B -- T:sms
+    api:B -- T:overpass
+    api:B -- T:google
+    api:B -- T:govdata
