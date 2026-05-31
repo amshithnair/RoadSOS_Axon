@@ -19,9 +19,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Service Category Enum
+    # Service Category Enum (Safely created)
     op.execute(
-        "CREATE TYPE service_category AS ENUM ('HOSPITAL', 'POLICE', 'AMBULANCE', 'TOWING', 'TYRE_SHOP', 'CAR_DEALER')"
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'service_category') THEN
+                CREATE TYPE service_category AS ENUM ('HOSPITAL', 'POLICE', 'AMBULANCE', 'TOWING', 'TYRE_SHOP', 'CAR_DEALER');
+            END IF;
+        END$$;
+        """
     )
 
     # Services table
@@ -36,7 +43,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column(
             "category",
-            sa.Enum(
+            postgresql.ENUM(
                 "HOSPITAL",
                 "POLICE",
                 "AMBULANCE",
@@ -44,6 +51,7 @@ def upgrade() -> None:
                 "TYRE_SHOP",
                 "CAR_DEALER",
                 name="service_category",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -75,13 +83,7 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), server_default="true", nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(
-        "idx_services_location",
-        "services",
-        ["location"],
-        unique=False,
-        postgresql_using="gist",
-    )
+    op.execute("CREATE INDEX IF NOT EXISTS idx_services_location ON services USING gist (location)")
 
     # Users table
     op.create_table(

@@ -18,9 +18,14 @@ class Settings(BaseSettings):
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
 
+    # Telegram Bot Settings
+    TELEGRAM_BOT_TOKEN: str | None = None
+    TELEGRAM_DEFAULT_CHAT_ID: str | None = None
+
     class Config:
         case_sensitive = True
         env_file = ".env"
+        extra = "ignore"
 
 
 settings = Settings()
